@@ -8,13 +8,12 @@
 #include "pread.h"
 
 
-static int pgrep(const char *process_name);
 static unsigned long get_symbol_offset(const char *process_name, const char *symbol);
 static unsigned long get_process_base_address(const int pid);
 
 
 extern unsigned long get_symbol_address_in_target(const char *target, const char *symbol) {
-  int pid = pgrep(target);
+  int pid = get_pid(target);
   if (pid == -1) {
     t_errno = T_EPROC_NOT_RUNNING;
     return 0UL;
@@ -31,7 +30,7 @@ extern unsigned long get_symbol_address_in_target(const char *target, const char
 }
 
 
-static int pgrep(const char *process_name) {
+extern int get_pid(const char *process_name) {
   char command[PATH_MAX] = {0};
 
   int printed_characters = snprintf(command, PATH_MAX, "pgrep %s", process_name);
@@ -64,6 +63,6 @@ static unsigned long get_process_base_address(const int pid) {
     t_errno = T_EPRINTF;
     return 0UL;
   }
-
+  
   return pread_unsigned_long(command);
 }

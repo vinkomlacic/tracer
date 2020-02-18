@@ -10,3 +10,12 @@
  * set.
  */
 extern unsigned long get_symbol_address_in_target(const char *target, const char *symbol);
+
+
+/**
+ * Returns the PID of a running process.
+ *
+ * If the process PID could not be retrieved for some reason t_errno is set
+ * and -1 is returned by the function.
+ */
+extern int get_pid(const char *process_name);
