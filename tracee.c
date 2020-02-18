@@ -35,5 +35,6 @@ noreturn void signal_handler(const int signo) {
 }
 
 void f1(void) {
-  sleep(1);
+  puts("Looping...");
+  sleep(2);
 }
