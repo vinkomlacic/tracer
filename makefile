@@ -23,7 +23,10 @@ tracer: $(OBJ)
 tracee: $(SRCDIR)/tracee.c
 	$(CC) -o $@ $^ $(CFLAGS)
 
-.PHONY: clean
+.PHONY: clean clean_tracee
 
 clean:
-	rm $(ODIR)/*.o tracer tracee
+	rm $(ODIR)/*.o tracer
+
+clean_tracee:
+	rm tracee
