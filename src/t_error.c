@@ -6,7 +6,7 @@
 t_errno_t t_errno = T_SUCCESS;
 
 
-extern void t_perror(const char *message) {
+extern void t_perror(char const * const message) {
   switch (t_errno) {
     case T_SUCCESS:
     printf("%s: no error\n", message);
@@ -41,6 +41,10 @@ extern void t_perror(const char *message) {
 
     case T_ESYMBOL_NOT_FOUND:
     printf("%s: specified symbol could not found in the object file.\n", message);
+    break;
+
+    case T_ECLI_EMPTY:
+    printf("%s: one of the option has no value.\n", message);
     break;
 
     default:

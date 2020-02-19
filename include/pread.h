@@ -1,10 +1,9 @@
-#pragma once
-
-#define BUFFER_LENGTH 1024
-
 /**
  * Utility functions used for reading from a pipe.
  */
+#pragma once
+
+#define BUFFER_LENGTH 1024
 
 
 /**

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 #include <sys/user.h>
@@ -8,29 +9,37 @@
 #include "cli.h"
 #include "process_info.h"
 #include "t_error.h"
+#include "tracer.h"
 
 
-static void check_error(void);
+static void check_for_error(void);
 
 
-int main(int argc, char *argv[static argc]) {
+int main(int const argc, char const * const argv[static argc]) {
   if (arguments_are_invalid(argc, argv)) {
-    puts("Error: invalid arguments");
+    puts("tracer: invalid arguments");
     print_usage();
     exit(EXIT_FAILURE);
   }
 
-  const char *target = parse_arguments(TARGET_NAME, argc, argv);
-  check_error();
-  const char *function = parse_arguments(FUNCTION_NAME, argc, argv);
-  check_error();
-  const unsigned long function_address = get_symbol_address_in_target(target, function);
-  check_error();
+  int const target_index = get_option_value(g_required_options[TARGET], argc, argv);
+  check_for_error();
+  char const * const target = argv[target_index];
+  int const symbol_index = get_option_value(g_optional_options[SYMBOL], argc, argv);
+  check_for_error();
+  char const * const symbol = symbol_index == -1 ? "" : argv[symbol_index];
 
-  printf("%s's address in %s = %lx\n", function, target, function_address);
+  printf("Target = %s\n", target);
+  printf("Symbol = %s\n", symbol);
 
-  const int pid = get_pid(target);
+  int const pid = get_pid(target);
+  check_for_error();
   printf("PID (%s) = %d\n", target, pid);
+
+  if (strcmp(symbol, "") != 0) {
+    unsigned long const symbol_address = get_symbol_address_in_target(target, symbol);
+    printf("Symbol: %s; Address: %lx\n", symbol, symbol_address);
+  }
 
   ptrace(PTRACE_ATTACH, pid, NULL, NULL);
   printf("Target %s attached.\n", target);
@@ -51,9 +60,9 @@ int main(int argc, char *argv[static argc]) {
 }
 
 
-static void check_error(void) {
+static void check_for_error(void) {
   if (t_errno != T_SUCCESS) {
-    t_perror("Error");
+    t_perror("tracer");
     exit(EXIT_FAILURE);
   }
 }

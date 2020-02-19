@@ -8,19 +8,19 @@
 #include "pread.h"
 
 
-static unsigned long get_symbol_offset(const char *process_name, const char *symbol);
-static unsigned long get_process_base_address(const int pid);
+static unsigned long get_symbol_offset(char const * const process_name, char const * const symbol);
+static unsigned long get_process_base_address(int const pid);
 
 
-extern unsigned long get_symbol_address_in_target(const char *target, const char *symbol) {
-  int pid = get_pid(target);
+extern unsigned long get_symbol_address_in_target(char const * const target, char const * const symbol) {
+  int const pid = get_pid(target);
   if (pid == -1) {
     t_errno = T_EPROC_NOT_RUNNING;
     return 0UL;
   }
 
-  unsigned long base_address = get_process_base_address(pid);
-  unsigned long offset = get_symbol_offset(target, symbol);
+  unsigned long const base_address = get_process_base_address(pid);
+  unsigned long const offset = get_symbol_offset(target, symbol);
   if (offset == 0UL) {
     t_errno = T_ESYMBOL_NOT_FOUND;
     return 0UL;
@@ -30,8 +30,8 @@ extern unsigned long get_symbol_address_in_target(const char *target, const char
 }
 
 
-extern int get_pid(const char *process_name) {
-  char command[PATH_MAX] = {0};
+extern int get_pid(char const * const process_name) {
+  char const command[PATH_MAX] = {0};
 
   int printed_characters = snprintf(command, PATH_MAX, "pgrep %s", process_name);
   if (printed_characters < 0) {
@@ -42,10 +42,10 @@ extern int get_pid(const char *process_name) {
 }
 
 
-static unsigned long get_symbol_offset(const char *process_name, const char *symbol) {
+static unsigned long get_symbol_offset(char const * const process_name, char const * const symbol) {
   char command[PATH_MAX] = {0};
   
-  int printed_characters = snprintf(command, PATH_MAX, "nm %s | grep %s", process_name, symbol);
+  int const printed_characters = snprintf(command, PATH_MAX, "nm %s | grep %s", process_name, symbol);
   if (printed_characters < 0) {
     t_errno = T_EPRINTF;
     return 0UL;
@@ -55,8 +55,8 @@ static unsigned long get_symbol_offset(const char *process_name, const char *sym
 }
 
 
-static unsigned long get_process_base_address(const int pid) {
-  char command[PATH_MAX] = {0};
+static unsigned long get_process_base_address(int const pid) {
+  char const command[PATH_MAX] = {0};
   
   int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps", pid);
   if (printed_characters < 0) {

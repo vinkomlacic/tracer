@@ -7,7 +7,7 @@ SRCDIR=src
 CFLAGS = -I$(IDIR) -Wall -Wextra -Wpedantic
 
 
-_DEPS = cli.h pread.h process_info.h t_error.h
+_DEPS = cli.h pread.h process_info.h t_error.h tracer.h option_t.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ = cli.o pread.o process_info.o t_error.o tracer.o

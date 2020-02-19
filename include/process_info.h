@@ -9,7 +9,7 @@
  * Also, if any other error occurs the same value is return and an error code is
  * set.
  */
-extern unsigned long get_symbol_address_in_target(const char *target, const char *symbol);
+extern unsigned long get_symbol_address_in_target(char const * const target, char const * const symbol);
 
 
 /**
@@ -18,4 +18,4 @@ extern unsigned long get_symbol_address_in_target(const char *target, const char
  * If the process PID could not be retrieved for some reason t_errno is set
  * and -1 is returned by the function.
  */
-extern int get_pid(const char *process_name);
+extern int get_pid(char const * const process_name);
