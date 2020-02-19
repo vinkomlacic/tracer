@@ -1,2 +1,0 @@
-gcc -o tracee -Wall -Wextra -Wpedantic tracee.c
-gcc -o tracer -Wall -Wextra -Wpedantic tracer.c process_info.c cli.c pread.c t_error.c
