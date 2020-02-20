@@ -69,5 +69,10 @@ extern bool option_is_present(options_t const * const options, option_t option) 
 
 
 static bool required_options_are_present(options_t const * const options) {
-  return options->target[0] != 0;
+  bool result = true;
+  
+  result &= options->target[0] != 0;
+  result &= options->symbol[0] != 0;
+  
+  return result;
 }
