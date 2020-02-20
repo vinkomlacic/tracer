@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <unistd.h>
+#include <time.h>
 #include <stdnoreturn.h>
+#include <stdbool.h>
 
-#define TRUE 1
-
-noreturn void signal_handler(int);
-void f1(void);
+static noreturn void signal_handler(int);
+static void f1(void);
+static void f2(void) __attribute__ ((unused));
 
 int main(void) {
   if (signal(SIGINT, signal_handler) == SIG_ERR) {
@@ -18,14 +18,14 @@ int main(void) {
   puts("Started the infinite loop program. To exit use CTRL-C.");
   printf("Address of the function f1: %lx\n\n", (unsigned long) f1);
 
-  while (TRUE) {
+  while (true) {
     f1();
   }
 
   return EXIT_SUCCESS;
 }
 
-noreturn void signal_handler(const int signo) {
+static noreturn void signal_handler(const int signo) {
   if (signo == SIGINT) {
     puts("\nSIGINT received.");
   }
@@ -34,7 +34,15 @@ noreturn void signal_handler(const int signo) {
   exit(EXIT_SUCCESS);
 }
 
-void f1(void) {
+static void f1(void) {
   puts("Looping...");
-  sleep(2);
+
+  struct timespec req = {2, 0L};
+  struct timespec rem = {0 , 0L};
+
+  // implementation note: nanosleep is used instead of sleep because the manual clearly 
+  // specifies it doesn't interact with signals
+  nanosleep(&req, &rem);
 }
+
+static void f2(void) {}
