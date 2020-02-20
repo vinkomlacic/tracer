@@ -32,7 +32,9 @@ typedef enum {
   T_EVALUE_NOT_FOUND = -8,
   T_EPROC_NOT_RUNNING = -9,       // target process not running
   T_ESYMBOL_NOT_FOUND = -10,      // symbol not found
-  T_ECLI_EMPTY = -11
+  T_ECLI_EMPTY = -11,             // option is missing an argument
+  T_ECLI_REQ = -12,               // required options is missing
+  T_ENULL_ARG = -13               // null argument passed to function
 } t_errno_t;
 
 
