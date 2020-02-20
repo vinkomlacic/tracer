@@ -32,16 +32,12 @@ int main(int const argc, char * const argv[static argc]) {
   printf("PID (%s) = %d\n", options.target, pid);
 
   ptrace(PTRACE_ATTACH, pid, NULL, NULL);
+  puts("Attaching target to this process.");
+  waitpid(pid, NULL, WNOHANG);
   printf("Target %s attached.\n", options.target);
-
-  printf("Continue (Y/n): ");
-  getchar(); getchar();
-
-  ptrace(PTRACE_CONT, pid, NULL, SIGCONT);
-  puts("Restarting the stopped process.");
-
-  printf("Detach process(Y/n): ");
-  getchar(); getchar();
+  
+  long data = 0xccL;
+  printf("Inserting ")
 
   ptrace(PTRACE_DETACH, pid, NULL, NULL);
   puts("Detaching the target process.");
