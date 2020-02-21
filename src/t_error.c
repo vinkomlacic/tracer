@@ -16,6 +16,11 @@ extern void t_perror(char const * const message) {
     case T_EPOPEN:
     case T_EPCLOSE:
     case T_EPREAD:
+    case T_EOPEN:
+    case T_ECLOSE:
+    case T_EREAD:
+    case T_EWRITE:
+    case T_EPTRACE:
       perror(message);
       break;
 
@@ -53,6 +58,18 @@ extern void t_perror(char const * const message) {
 
     case T_ENULL_ARG:
     printf("%s: null argument passed to a function.\n", message);
+    break;
+
+    case T_EENCODING:
+    printf("%s: encoding error while copying string.\n", message);
+    break;
+
+    case T_ESTR_TRUNC:
+    printf("%s: string truncated while copying string.\n", message);
+    break;
+
+    case T_EWAIT:
+    printf("%s: wait / waitpid / waitid error.\n", message);
     break;
 
     default:

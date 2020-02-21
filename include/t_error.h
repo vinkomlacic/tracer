@@ -34,7 +34,15 @@ typedef enum {
   T_ESYMBOL_NOT_FOUND = -10,      // symbol not found
   T_ECLI_EMPTY = -11,             // option is missing an argument
   T_ECLI_REQ = -12,               // required options is missing
-  T_ENULL_ARG = -13               // null argument passed to function
+  T_ENULL_ARG = -13,              // null argument passed to function
+  T_EENCODING = -14,              // encoding error
+  T_ESTR_TRUNC = -15,             // string truncated
+  T_EOPEN = -16,                  // error opening file
+  T_ECLOSE = -17,                  // error closing file
+  T_EREAD = -18,                  // generic read error
+  T_EWRITE = -19,                  // generic write error
+  T_EPTRACE = -20,                // ptrace error
+  T_EWAIT = -21                   // wait / waitpid / waitid error
 } t_errno_t;
 
 
@@ -46,6 +54,5 @@ extern t_errno_t t_errno;
 
 /**
  * Prints the error message of currently set t_errno variable.
- * Message argument is printed before the error message followed by a colon.
  */
 extern void t_perror(char const * const message);
