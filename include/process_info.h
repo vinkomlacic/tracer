@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 /**
  * Returns the address of a symbol in a currently running program.
  * 
@@ -9,7 +11,7 @@
  * Also, if any other error occurs the same value is return and an error code is
  * set.
  */
-extern unsigned long get_symbol_address_in_target(char const * const target, char const * const symbol);
+extern uint64_t get_symbol_address_in_target(char const * const target, char const * const symbol);
 
 
 /**
