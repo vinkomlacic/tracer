@@ -3,16 +3,18 @@
  */
 #pragma once
 
-#define BUFFER_LENGTH 1024
+#include <stdint.h>
+
+#define BUFFER_LENGTH (1024)
 
 
 /**
- * Reads an unsigned long integer from a pipe specified by a command.
+ * Reads a word from a pipe specified by a command.
  * 
  * If there was a problem opening, closing or reading from a pipe 0UL is returned
  * and a corresponding t_errno value is set.
  */
-extern unsigned long pread_unsigned_long(const char *command);
+extern intptr_t pread_word(char const *command);
 
 
 /**

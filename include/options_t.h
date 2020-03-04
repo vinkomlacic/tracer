@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#define TARGET_MAX 256
-#define SYMBOL_MAX 256
+#define TARGET_MAX (256)
+#define SYMBOL_MAX (256)
 
 typedef struct {
   /* Required options */

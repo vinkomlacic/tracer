@@ -9,6 +9,8 @@
  * TODO: add support for providing contextual error messages
  */
 
+#include <stdbool.h>
+
 
 typedef enum {
   T_SUCCESS = 0,
@@ -55,4 +57,18 @@ extern t_errno_t t_errno;
 /**
  * Prints the error message of currently set t_errno variable.
  */
-extern void t_perror(char const * const message);
+extern void t_perror(char const * message);
+
+/**
+ * Checks the t_errno value and exits the process in case the value is anything other than success.
+ * Also, error message detailing the error is printed to stdout.
+ * In case there is no error, nothing happens.
+ */
+extern void check_for_error(void);
+
+
+/**
+ * Checks if an error occured.
+ * If error occurred returns true, otherwise false.
+ */
+extern bool error_occurred(void);

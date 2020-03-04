@@ -19,7 +19,7 @@ typedef enum {TARGET, SYMBOL} option_t;
  * Note: Non option arguments are ignored.
  *
  * If an error occurs, t_errno is set and the function will return the options_t struct which
- * will contain parsed options until the moment error occured.
+ * will contain parsed options until the moment error occurred.
  *
  * Possible t_errno values:
  *    T_ECLI_EMPTY  - option is missing an argument
@@ -28,7 +28,7 @@ typedef enum {TARGET, SYMBOL} option_t;
  *
  * On success, populated options_t struct is returned.
  */
-extern options_t parse_options(int const argc, char * const argv[static argc]);
+extern options_t parse_options(int argc, char * const argv[]);
 
 
 /**
@@ -40,4 +40,4 @@ extern options_t parse_options(int const argc, char * const argv[static argc]);
  * to pass. Nevertheless, in this case t_errno is set to T_ECLI_ARGV and false is
  * returned.
  */
-extern bool option_is_present(options_t const * const options, option_t option);
+extern bool option_is_present(options_t const * options, option_t option);
