@@ -1,10 +1,12 @@
 CC=gcc
 
+OPTIONS=-std=gnu11 -g
+WARNINGS_FILE=warnings
 IDIR=include
 ODIR=obj
 SRCDIR=src
 
-CFLAGS = -I$(IDIR) -Wall -Wextra -Wpedantic
+CFLAGS = -I$(IDIR) $(OPTIONS) @$(WARNINGS_FILE)
 TRACEE_TARGET_STEM=tracee
 
 SRC = $(filter-out $(TRACEE_TARGET_STEM).c, $(notdir $(wildcard $(SRCDIR)/*.c)))
@@ -19,7 +21,7 @@ tracer: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 tracee: $(SRCDIR)/$(TRACEE_TARGET_STEM).c
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) -fverbose-asm
 
 .PHONY: clean clean_tracee
 
