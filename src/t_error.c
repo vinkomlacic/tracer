@@ -1,5 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+#include "log.h"
 #include "t_error.h"
 
 
@@ -9,7 +13,7 @@ t_errno_t t_errno = T_SUCCESS;
 extern void t_perror(char const * const message) {
     switch (t_errno) {
         case T_SUCCESS:
-            printf("%s: no error\n", message);
+            ERROR("%s: no error", message);
             break;
 
         case T_ERROR:
@@ -21,66 +25,66 @@ extern void t_perror(char const * const message) {
         case T_EREAD:
         case T_EWRITE:
         case T_EPTRACE:
-            perror(message);
+            ERROR("%s: caused by: %s", message, strerror(errno));
             break;
 
         case T_EFGETS:
-            printf("%s: fgets failed reading from a stream.\n", message);
+            ERROR("%s: fgets failed reading from a stream.", message);
             break;
 
         case T_EPRINTF:
-            printf("%s: function from printf family failed printing to a stream.\n", message);
+            ERROR("%s: function from printf family failed printing to a stream.", message);
             break;
 
         case T_ECLI_ARGV:
-            printf("%s: error reading command line arguments.\n", message);
+            ERROR("%s: error reading command line arguments.", message);
             break;
 
         case T_EVALUE_NOT_FOUND:
-            printf("%s: value not found in an array.\n", message);
+            ERROR("%s: value not found in an array.", message);
             break;
 
         case T_EPROC_NOT_RUNNING:
-            printf("%s: target process not running.\n", message);
+            ERROR("%s: target process not running.", message);
             break;
 
         case T_ESYMBOL_NOT_FOUND:
-            printf("%s: specified symbol could not found in the object file.\n", message);
+            ERROR("%s: specified symbol could not found in the object file.", message);
             break;
 
         case T_ECLI_EMPTY:
-            printf("%s: one of the option has no value.\n", message);
+            ERROR("%s: one of the options has no value.", message);
             break;
 
         case T_ECLI_REQ:
-            printf("%s: required option is missing.\n", message);
+            ERROR("%s: required option is missing.", message);
             break;
 
         case T_ENULL_ARG:
-            printf("%s: null argument passed to a function.\n", message);
+            ERROR("%s: null argument passed to a function.", message);
             break;
 
         case T_EENCODING:
-            printf("%s: encoding error while copying string.\n", message);
+            ERROR("%s: encoding error while copying string.", message);
             break;
 
         case T_ESTR_TRUNC:
-            printf("%s: string truncated while copying string.\n", message);
+            ERROR("%s: string truncated while copying string.", message);
             break;
 
         case T_EWAIT:
-            printf("%s: wait / waitpid / waitid error.\n", message);
+            ERROR("%s: wait / waitpid / waitid error.", message);
             break;
 
         default:
-          printf("%s: unrecognized error.\n", message);
+          ERROR("%s: unrecognized error.", message);
     }
 }
 
 
 extern void check_for_error(void) {
     if (error_occurred()) {
-        t_perror("tracer");
+        t_perror("message");
         exit(EXIT_FAILURE);
     }
 }

@@ -4,9 +4,10 @@
 #include <stdbool.h>
 #include <getopt.h>
 
+#include "t_error.h"
+#include "log.h"
 #include "options_t.h"
 #include "options.h"
-#include "t_error.h"
 
 
 static bool required_options_are_present(options_t const * options);
@@ -19,23 +20,24 @@ extern options_t parse_options(int const argc, char * const argv[]) {
     while ((c = getopt(argc, argv, "t:s:")) != -1) {
         switch (c) {
             case 't':
+                TRACE("-t option encountered with value %s", optarg);
                 strncpy(options.target, optarg, sizeof(options.target));
                 break;
 
             case 's':
+                TRACE("-s option encountered with value %s", optarg);
                 strncpy(options.symbol, optarg, sizeof(options.symbol));
                 break;
 
             case '?':
+                WARN("Option '-%c' is an unknown option or it requires an argument which was not provided", optopt);
                 if (optopt == 't' || optopt == 's') {
                     t_errno = T_ECLI_EMPTY;
-                } else {
-                    t_errno = T_ECLI_ARGV;
                 }
                 return options;
 
             default:
-                puts("Unexpected exception while parsing command line. Aborting.");
+                FATAL("Unexpected exception while parsing command line. Aborting.");
                 exit(EXIT_FAILURE);
         }
     }

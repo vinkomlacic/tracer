@@ -2,19 +2,22 @@
 #include <stdarg.h>
 
 #include "t_error.h"
+#include "log.h"
 #include "pread.h"
 
 
-static void pread_item(char const *command, char const *format, ...)
-__attribute__ ((format(scanf, 2, 3)));
+__attribute__ ((format(scanf, 2, 3)))
+static void pread_item(char const *command, char const *format, ...);
+
 
 
 extern intptr_t pread_word(char const * const command) {
   intptr_t output = 0L;
   pread_item(command, "%lx", &output);
-  if (t_errno) {
+  if (error_occurred()) {
     return 0L;
   }
+  TRACE("%s => %#lx", command, output);
 
   return output;
 }
@@ -23,9 +26,10 @@ extern intptr_t pread_word(char const * const command) {
 extern int pread_int(char const * const command) {
   int output = 0;
   pread_item(command, "%d", &output);
-  if (t_errno) {
+  if (error_occurred()) {
     return -1;
   }
+  TRACE("%s => %d", command, output);
 
   return output;
 }

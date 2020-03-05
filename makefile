@@ -1,12 +1,13 @@
 CC=gcc
 
+MACROS=-D LOG_ALL
 OPTIONS=-std=gnu11 -g
 WARNINGS_FILE=warnings
 IDIR=include
 ODIR=obj
 SRCDIR=src
 
-CFLAGS = -I$(IDIR) $(OPTIONS) @$(WARNINGS_FILE)
+CFLAGS = -I$(IDIR) $(OPTIONS) @$(WARNINGS_FILE) $(MACROS)
 TRACEE_TARGET_STEM=tracee
 
 SRC = $(filter-out $(TRACEE_TARGET_STEM).c, $(notdir $(wildcard $(SRCDIR)/*.c)))
