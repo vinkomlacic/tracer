@@ -1,6 +1,6 @@
 CC=gcc
 
-MACROS=-D LOG_ALL
+MACROS=-D INFO_ENABLE -D WARN_ENABLE
 OPTIONS=-std=gnu11 -g
 WARNINGS_FILE=warnings
 IDIR=include
