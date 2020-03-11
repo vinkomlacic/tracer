@@ -3,6 +3,10 @@
 #include <stdint.h>
 
 /**
+ * TODO get rid of dependency on the target name => use PID instead
+ */
+
+/**
  * Returns the address of a symbol in a currently running program.
  * 
  * If the process is not running or a symbol could not be found in the object file
@@ -12,6 +16,15 @@
  * set.
  */
 extern intptr_t get_symbol_address_in_target(char const target[], char const symbol[]);
+
+
+/**
+ * Returns the address of a symbol in a library in a currently running program.
+ *
+ * If the process is not running or a symbol could not be found in the object file
+ * 0UL is returned and t_errno code is set.
+ */
+extern intptr_t get_symbol_address_in_lib(char const target[], char const libname[], char const symbol[]);
 
 
 /**

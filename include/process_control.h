@@ -51,6 +51,9 @@ extern void wait_for_bp(pid_t pid);
 extern int call_function(pstate_t *pstate, char const function_to_call[], int arg);
 
 
+extern int call_function_in_lib(pstate_t *pstate, char const function_to_call[], char const lib[], int arg);
+
+
 /**
  * Detaches from the target process.
  *

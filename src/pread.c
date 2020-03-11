@@ -34,17 +34,28 @@ extern int pread_int(char const command[const]) {
 }
 
 
-static void pread_item(char const command[const], char const format[const], ...) {
+extern void pread_raw_line(const char command[const], char output[static BUFFER_LENGTH]) {
     FILE *pipe = popen(command, "r");
     if (pipe == NULL) {
         t_errno = T_EPOPEN;
     }
 
-    char buffer[BUFFER_LENGTH] = {0};
-    if (fgets(buffer, BUFFER_LENGTH, pipe) == NULL) {
+    if (fgets(output, BUFFER_LENGTH, pipe) == NULL) {
         t_errno = T_EFGETS;
         return;
     }
+
+    if (pclose(pipe) == -1) {
+        t_errno = T_EPCLOSE;
+    }
+}
+
+
+static void pread_item(char const command[const], char const format[const], ...) {
+    char buffer[BUFFER_LENGTH] = {0};
+
+    pread_raw_line(command, buffer);
+    if (error_occurred()) return;
 
     va_list arguments;
     va_start(arguments, format);
@@ -57,8 +68,4 @@ static void pread_item(char const command[const], char const format[const], ...)
         return;
     }
     va_end(arguments);
-
-    if (pclose(pipe) == -1) {
-        t_errno = T_EPCLOSE;
-    }
 }

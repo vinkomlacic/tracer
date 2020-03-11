@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <limits.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -10,7 +11,9 @@
 
 
 static intptr_t get_symbol_offset(char const process_name[], char const symbol[]);
-static intptr_t get_process_base_address(pid_t pid, char const target[]);
+static intptr_t get_symbol_offset_in_lib(char const lib_path[], char const symbol[]);
+static intptr_t get_lib_base_address(pid_t pid, char const lib[]);
+static void get_lib_path(pid_t pid, char const lib[], char path[]);
 
 
 extern intptr_t get_symbol_address_in_target(char const target[const], char const symbol[const]) {
@@ -21,7 +24,7 @@ extern intptr_t get_symbol_address_in_target(char const target[const], char cons
     }
     DEBUG("pid: %d", pid);
 
-    intptr_t const base_address = get_process_base_address(pid, target);
+    intptr_t const base_address = get_lib_base_address(pid, target);
     DEBUG("base_address: %#lx", base_address);
 
     intptr_t const offset = get_symbol_offset(target, symbol);
@@ -32,6 +35,33 @@ extern intptr_t get_symbol_address_in_target(char const target[const], char cons
     DEBUG("offset: %#x", offset);
 
     return base_address + offset;
+}
+
+
+extern intptr_t get_symbol_address_in_lib(char const target[const], char const lib[const], char const symbol[const]) {
+    pid_t const pid = get_pid(target);
+    if (pid == -1) {
+        t_errno = T_EPROC_NOT_RUNNING;
+        return 0;
+    }
+    DEBUG("pid: %d", pid);
+
+    intptr_t const base_address = get_lib_base_address(pid, lib);
+    DEBUG("base_address: %#lx", base_address);
+
+    char lib_path[PATH_MAX] = {0};
+    get_lib_path(pid, lib, lib_path);
+    if (error_occurred()) return 0;
+
+    intptr_t const offset = get_symbol_offset_in_lib(lib_path, symbol);
+    if (offset == 0) {
+        t_errno = T_ESYMBOL_NOT_FOUND;
+        return 0;
+    }
+    DEBUG("offset: %#x", offset);
+
+    return base_address + offset;
+
 }
 
 
@@ -62,15 +92,44 @@ static intptr_t get_symbol_offset(char const process_name[const], char const sym
 }
 
 
-static intptr_t get_process_base_address(pid_t const pid, char const target[const]) {
+static intptr_t get_symbol_offset_in_lib(char const lib_path[const], char const symbol[const]) {
     char command[PATH_MAX] = {0};
 
-    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*%s", pid, target);
+    DEBUG("Getting symbol offset => objdump -d %s | grep -e \"<.*%s.*>:\"", lib_path, symbol);
+    int const printed_characters = snprintf(command, PATH_MAX, "objdump -d %s | grep -e \"<.*%s.*>:\"", lib_path, symbol);
     if (printed_characters < 0) {
         t_errno = T_EPRINTF;
         return 0;
     }
-    DEBUG("Getting process base address => %s", command);
 
     return pread_word(command);
+}
+
+
+static intptr_t get_lib_base_address(pid_t const pid, char const lib[const]) {
+    char command[PATH_MAX] = {0};
+
+    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*%s", pid, lib);
+    if (printed_characters < 0) {
+        t_errno = T_EPRINTF;
+        return 0;
+    }
+    DEBUG("Getting library %s base address => %s", lib, command);
+
+    return pread_word(command);
+}
+
+
+static void get_lib_path(pid_t const pid, char const lib[const], char path[const]) {
+    char command[PATH_MAX] = {0};
+
+    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep -o -e \"/.*%s.*$\"", pid, lib);
+    if (printed_characters < 0) {
+        t_errno = T_EPRINTF;
+        return;
+    }
+    DEBUG("Getting library %s path => %s", lib, command);
+
+    pread_raw_line(command, path);
+    path[strlen(path) - 1] = '\0'; // delete the newline at the end
 }

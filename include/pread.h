@@ -24,3 +24,6 @@ extern intptr_t pread_word(char const command[]);
  * and a corresponding t_errno value is set.
  */
 extern int pread_int(const char command[]);
+
+
+extern void pread_raw_line(const char command[], char output[static BUFFER_LENGTH]);
