@@ -80,8 +80,8 @@ extern void proc_write_byte(pid_t const pid, intptr_t const address, uint8_t con
 }
 
 
-static void construct_memory_path(char memory_path[static MEMORY_PATH_MAX], pid_t const pid) {
-    int copied_characters = snprintf(memory_path, MEMORY_PATH_MAX, MEMORY_PATH_FORMAT, pid);
+static void construct_memory_path(char memory_path[const static MEMORY_PATH_MAX], pid_t const pid) {
+    int const copied_characters = snprintf(memory_path, MEMORY_PATH_MAX, MEMORY_PATH_FORMAT, pid);
 
     if (copied_characters < 0) {
         t_errno = T_EENCODING;

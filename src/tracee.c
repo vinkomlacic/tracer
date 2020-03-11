@@ -3,7 +3,7 @@
 
 
 static void f1(void);
-static void f2(void) __attribute__ ((unused));
+static int f2(int arg) __attribute__ ((unused));
 
 int main(void) {
     printf("Press ENTER to start");
@@ -19,4 +19,11 @@ static void f1(void) {
     getchar();
 }
 
-static void f2(void) {}
+static int f2(int const arg) {
+    printf("Function f2 called with argument value %d\n", arg);
+    printf("Press ENTER to return");
+    getchar();
+    printf("Returning %d\n", arg+1);
+
+    return arg+1;
+}

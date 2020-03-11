@@ -11,7 +11,7 @@
  * Also, if any other error occurs the same value is return and an error code is
  * set.
  */
-extern intptr_t get_symbol_address_in_target(char const *target, char const *symbol);
+extern intptr_t get_symbol_address_in_target(char const target[], char const symbol[]);
 
 
 /**
@@ -20,4 +20,4 @@ extern intptr_t get_symbol_address_in_target(char const *target, char const *sym
  * If the process PID could not be retrieved for some reason t_errno is set
  * and -1 is returned by the function.
  */
-extern pid_t get_pid(char const *process_name);
+extern pid_t get_pid(char const process_name[]);

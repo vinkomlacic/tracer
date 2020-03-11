@@ -9,11 +9,11 @@
 #include "process_info.h"
 
 
-static intptr_t get_symbol_offset(char const * process_name, char const * symbol);
-static intptr_t get_process_base_address(pid_t pid, char const * target);
+static intptr_t get_symbol_offset(char const process_name[], char const symbol[]);
+static intptr_t get_process_base_address(pid_t pid, char const target[]);
 
 
-extern intptr_t get_symbol_address_in_target(char const * const target, char const * const symbol) {
+extern intptr_t get_symbol_address_in_target(char const target[const], char const symbol[const]) {
     pid_t const pid = get_pid(target);
     if (pid == -1) {
         t_errno = T_EPROC_NOT_RUNNING;
@@ -35,7 +35,7 @@ extern intptr_t get_symbol_address_in_target(char const * const target, char con
 }
 
 
-extern pid_t get_pid(char const * const process_name) {
+extern pid_t get_pid(char const process_name[const]) {
     char command[PATH_MAX] = {0};
 
     DEBUG("Getting PID => pgrep %s", process_name);
@@ -48,7 +48,7 @@ extern pid_t get_pid(char const * const process_name) {
 }
 
 
-static intptr_t get_symbol_offset(char const * const process_name, char const * const symbol) {
+static intptr_t get_symbol_offset(char const process_name[const], char const symbol[const]) {
     char command[PATH_MAX] = {0};
 
     DEBUG("Getting symbol offset => nm %s | grep %s", process_name, symbol);
@@ -62,15 +62,15 @@ static intptr_t get_symbol_offset(char const * const process_name, char const * 
 }
 
 
-static intptr_t get_process_base_address(pid_t const pid, char const * target) {
+static intptr_t get_process_base_address(pid_t const pid, char const target[const]) {
     char command[PATH_MAX] = {0};
 
-    DEBUG("Getting process base address => cat /proc/%d/maps | grep r.*%s", pid, target);
     int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*%s", pid, target);
     if (printed_characters < 0) {
         t_errno = T_EPRINTF;
         return 0;
     }
+    DEBUG("Getting process base address => %s", command);
 
     return pread_word(command);
 }

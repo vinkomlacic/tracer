@@ -7,11 +7,10 @@
 
 
 __attribute__ ((format(scanf, 2, 3)))
-static void pread_item(char const *command, char const *format, ...);
+static void pread_item(char const command[], char const format[], ...);
 
 
-
-extern intptr_t pread_word(char const * const command) {
+extern intptr_t pread_word(char const command[const]) {
   intptr_t output = 0L;
   pread_item(command, "%lx", &output);
   if (error_occurred()) {
@@ -23,7 +22,7 @@ extern intptr_t pread_word(char const * const command) {
 }
 
 
-extern int pread_int(char const * const command) {
+extern int pread_int(char const command[const]) {
   int output = 0;
   pread_item(command, "%d", &output);
   if (error_occurred()) {
@@ -35,7 +34,7 @@ extern int pread_int(char const * const command) {
 }
 
 
-static void pread_item(char const * const command, char const * const format, ...) {
+static void pread_item(char const command[const], char const format[const], ...) {
     FILE *pipe = popen(command, "r");
     if (pipe == NULL) {
         t_errno = T_EPOPEN;

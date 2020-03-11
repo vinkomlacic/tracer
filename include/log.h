@@ -37,6 +37,6 @@
 #define WARN(...)
 #endif
 
-#define ERROR(...) printf("ERROR  "); printf(__VA_ARGS__); printf("\n")
+#define ERROR(...) fprintf(stderr, "ERROR  "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
 
-#define FATAL(...) printf("FATAL  "); printf(__VA_ARGS__); printf("\n")
+#define FATAL(...) fprintf(stderr, "FATAL  "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")

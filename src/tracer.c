@@ -1,51 +1,63 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "process_control.h"
 #include "process_info.h"
 #include "t_error.h"
 #include "options.h"
 #include "options_t.h"
+#include "pstate_t.h"
 
 #include "log.h"
 
 
-int main(int const argc, char * const argv[]) {
+int main(int const argc, char const * const argv[const]) {
     options_t options = parse_options(argc, argv);
     check_for_error();
 
     INFO("Looking up %s in the targets symbol table...", options.symbol);
-    intptr_t const symbol_address = get_symbol_address_in_target(options.target, options.symbol);
+    intptr_t const entry_function = get_symbol_address_in_target(options.target, options.symbol);
     check_for_error();
-    INFO("Symbol %s found at address: %#lx", options.symbol, symbol_address);
+    INFO("Symbol %s found at address: %#lx", options.symbol, entry_function);
 
-    int const pid = get_pid(options.target);
+    INFO("Initializing pstate struct. Getting pid of the target...");
+    pstate_t pstate = create_pstate();
+    strncpy(pstate.name, options.target, sizeof(pstate.name) - 1);
+    pstate.pid = get_pid(options.target);
     check_for_error();
-    DEBUG("PID (%s) = %d", options.target, pid);
+    INFO("PID found: %d", pstate.pid);
 
-    INFO("Attaching target to this process..");
-    pattach(pid);
+    pattach(pstate.pid);
     check_for_error();
-    INFO("Target %s attached.\n", options.target);
+    INFO("Target \"%s\" attached. Target process stopped.", options.target);
 
-    uint8_t old_instruction = inject_interrupt_at(pid, symbol_address);
+    INFO("Changing process memory at %#lx", entry_function);
+    set_breakpoint(entry_function, &pstate);
     check_for_error();
-    INFO("Injected interrupt in the process code.");
+    INFO("Breakpoint injected at %#lx <%s>", pstate.change_address, options.symbol);
 
-    INFO("Continuing execution.\n");
-    pcontinue(pid);
+    INFO("Continuing execution");
+    pcontinue(pstate.pid);
     check_for_error();
 
-    INFO("Waiting for code to get to the breakpoint.");
-    breakpoint_handler(pid, symbol_address, old_instruction);
+    INFO("Waiting for code to get to the breakpoint");
+    wait_for_bp(pstate.pid);
     check_for_error();
-    INFO("Breakpoint caught.\n");
+    INFO("Target process stopped. Target process at entry function. Saving registers");
+    save_process_regs(&pstate);
+    pstate.changed_regs.rip -= 1ULL;
+    check_for_error();
 
-    printf("Press ENTER to detach the process");
-    getchar();
+    int ret_val = call_function(&pstate, options.function_to_call, options.argument);
+    check_for_error();
+    INFO("Function call: %s(%d) => %d", options.function_to_call, options.argument, ret_val);
+
+    INFO("Reverting process state before first change. Address of first change: %#lx", pstate.change_address);
+    revert_to(&pstate);
+    check_for_error();
 
     INFO("Detaching the target process.");
-    pdetach(pid);
+    pdetach(pstate.pid);
     check_for_error();
 
     return EXIT_SUCCESS;

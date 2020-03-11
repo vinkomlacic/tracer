@@ -9,7 +9,7 @@
 #include "options_t.h"
 
 
-typedef enum {TARGET, SYMBOL} option_t;
+typedef enum {TARGET, SYMBOL, FUNCTION_TO_CALL, ARGUMENT} option_t;
 
 
 /**
@@ -28,7 +28,7 @@ typedef enum {TARGET, SYMBOL} option_t;
  *
  * On success, populated options_t struct is returned.
  */
-extern options_t parse_options(int argc, char * const argv[]);
+extern options_t parse_options(int argc, char const * const argv[]);
 
 
 /**

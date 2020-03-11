@@ -10,10 +10,10 @@
 t_errno_t t_errno = T_SUCCESS;
 
 
-extern void t_perror(char const * const message) {
+extern void t_perror(char const message[const]) {
     switch (t_errno) {
         case T_SUCCESS:
-            ERROR("%s: no error", message);
+            ERROR("No error");
             break;
 
         case T_ERROR:
@@ -25,7 +25,7 @@ extern void t_perror(char const * const message) {
         case T_EREAD:
         case T_EWRITE:
         case T_EPTRACE:
-            ERROR("%s: caused by: %s", message, strerror(errno));
+            ERROR("%s: %s", message, strerror(errno));
             break;
 
         case T_EFGETS:
@@ -84,7 +84,7 @@ extern void t_perror(char const * const message) {
 
 extern void check_for_error(void) {
     if (error_occurred()) {
-        t_perror("message");
+        t_perror("caused by");
         exit(EXIT_FAILURE);
     }
 }

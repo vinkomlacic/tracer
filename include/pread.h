@@ -14,7 +14,7 @@
  * If there was a problem opening, closing or reading from a pipe 0UL is returned
  * and a corresponding t_errno value is set.
  */
-extern intptr_t pread_word(char const *command);
+extern intptr_t pread_word(char const command[]);
 
 
 /**
@@ -23,4 +23,4 @@ extern intptr_t pread_word(char const *command);
  * If there was a problem opening, closing or reading from a pipe -1 is returned
  * and a corresponding t_errno value is set.
  */
-extern int pread_int(const char *command);
+extern int pread_int(const char command[]);

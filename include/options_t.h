@@ -9,7 +9,7 @@
 typedef struct {
   /* Required options */
   char target[TARGET_MAX];
-
-  /* Optional options */
   char symbol[SYMBOL_MAX];
+  char function_to_call[SYMBOL_MAX];
+  int argument;
 } options_t;

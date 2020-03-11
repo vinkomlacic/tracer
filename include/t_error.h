@@ -40,11 +40,11 @@ typedef enum {
   T_EENCODING = -14,              // encoding error
   T_ESTR_TRUNC = -15,             // string truncated
   T_EOPEN = -16,                  // error opening file
-  T_ECLOSE = -17,                  // error closing file
+  T_ECLOSE = -17,                 // error closing file
   T_EREAD = -18,                  // generic read error
-  T_EWRITE = -19,                  // generic write error
+  T_EWRITE = -19,                 // generic write error
   T_EPTRACE = -20,                // ptrace error
-  T_EWAIT = -21                   // wait / waitpid / waitid error
+  T_EWAIT = -21,                  // wait / waitpid / waitid error
 } t_errno_t;
 
 
@@ -56,12 +56,13 @@ extern t_errno_t t_errno;
 
 /**
  * Prints the error message of currently set t_errno variable.
+ * Error is outputted to stderr stream.
  */
-extern void t_perror(char const * message);
+extern void t_perror(char const message[]);
 
 /**
  * Checks the t_errno value and exits the process in case the value is anything other than success.
- * Also, error message detailing the error is printed to stdout.
+ * Also, error message detailing the error is printed to stderr.
  * In case there is no error, nothing happens.
  */
 extern void check_for_error(void);
