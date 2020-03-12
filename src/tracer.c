@@ -12,10 +12,6 @@
 int main(int const argc, char const * const argv[const]) {
     char const target[] = "tracee";
     char const symbol[] = "f1";
-    char const function_to_call[] = "getpagesize";
-    char const lib[] = "libc";
-    int argument = 0;
-    int expected_output = getpagesize();
 
     INFO("Looking up %s in the targets symbol table...", symbol);
     intptr_t const entry_function = get_symbol_address_in_target(target, symbol);
@@ -50,10 +46,12 @@ int main(int const argc, char const * const argv[const]) {
     pstate.changed_regs.rip -= 1ULL;
     check_for_error();
 
-    int ret_val = call_function_in_lib(&pstate, function_to_call, lib, argument);
+    size_t alignment = sizeof(unsigned long long);
+    size_t size = 16;
+    intptr_t allocated_address = call_posix_memalign(&pstate, alignment, size);
     check_for_error();
-    INFO("Function call: %s(%d) => %d", function_to_call, argument, ret_val);
-    INFO("Expected output: %d", expected_output);
+    INFO("posix_memalign(%d, %d) => %#lx", alignment, size, allocated_address);
+    INFO("Address of the allocated memory is stored on top of the stack.");
 
     INFO("Reverting process state before first change. Address of first change: %#lx", pstate.change_address);
     revert_to(&pstate);

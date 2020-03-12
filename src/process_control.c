@@ -134,6 +134,62 @@ extern int call_function_in_lib(pstate_t * const pstate, char const function_to_
 }
 
 
+extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignment, size_t const size) {
+    // TODO validate pstate
+    // TODO extract address in a function
+    intptr_t address = get_address_after_changes(pstate);
+
+    intptr_t const function_address = get_symbol_address_in_lib(pstate->name, "libc", "posix_memalign");
+    if (function_address == 0L && error_occurred()) return -1;
+    DEBUG("Function address in %s: %#lx", pstate->name, function_address);
+
+    if (has_changes(pstate) == false) pstate->change_address = address;
+
+    DEBUG("Setting up indirect call to posix_memalign %%rax = %#lx", function_address);
+    struct user_regs_struct regs = get_regs(pstate->pid);
+    regs.rax = (unsigned long long int) function_address;
+    regs.rdi = regs.rsp - 8ULL;
+    regs.rsi = (unsigned long long int) alignment;
+    regs.rdx = (unsigned long long int) size;
+
+    if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
+        t_errno = T_EPTRACE;
+        return 0;
+    }
+
+    DEBUG("Injecting indirect call to the process memory");
+    uint8_t const indirect_call[] = {0xFF, 0xD0};
+    inject_code(pstate, sizeof(indirect_call), indirect_call);
+    if (error_occurred()) return -1;
+
+    intptr_t breakpoint_address = get_address_after_changes(pstate);
+    set_breakpoint(breakpoint_address, pstate);
+    if (error_occurred()) return -1;
+
+#ifdef DEBUG_ENABLE
+        uint8_t bytes[4] = {0};
+    for (int i = 0; i < 4; i++) {
+        bytes[i] = proc_read_byte(pstate->pid, pstate->change_address + i);
+    }
+    DEBUG("======== Changed memory = %#x %#x %#x %#x", bytes[0], bytes[1], bytes[2], bytes[3]);
+#endif
+
+    DEBUG("Executing indirect call and interrupt");
+    pcontinue(pstate->pid);
+    if (error_occurred()) return -1;
+
+    wait_for_bp(pstate->pid);
+    if (error_occurred()) return -1;
+
+    intptr_t ret_value_address = (intptr_t) (get_regs(pstate->pid).rsp - 8ULL);
+    DEBUG("Return value address (top of the stack): %#lx", ret_value_address);
+    intptr_t ret_value = proc_read_word(pstate->pid, ret_value_address);
+    if (error_occurred()) return -1;
+
+    return ret_value;
+}
+
+
 extern void pdetach(pid_t const pid) {
     DEBUG("rip: %#llx", get_regs(pid).rip);
     if (ptrace(PTRACE_DETACH, pid, 0, 0) == -1) {

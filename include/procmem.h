@@ -15,6 +15,10 @@
  */
 extern uint8_t proc_read_byte(pid_t pid, intptr_t address);
 
+
+extern intptr_t proc_read_word(pid_t pid, intptr_t address);
+
+
 /**
  * Writes a byte-sized value at the specified address in the process.
  * In case an error occurs t_errno value is set.

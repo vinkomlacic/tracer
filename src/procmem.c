@@ -7,6 +7,10 @@
 #include "log.h"
 #include "procmem.h"
 
+/**
+ * TODO proc_read_byte and proc_read_word have a lot of duplicated code => REFACTOR
+ */
+
 
 static void construct_memory_path(char memory_path[static MEMORY_PATH_MAX], pid_t pid);
 
@@ -43,6 +47,43 @@ extern uint8_t proc_read_byte(pid_t const pid, intptr_t const address) {
         return 0;
     }
     TRACE("Read %#x from process %d at %#lx", result, pid, address);
+
+    return result;
+}
+
+
+extern intptr_t proc_read_word(pid_t const pid, intptr_t const address) {
+    char memory_path[MEMORY_PATH_MAX] = {0};
+    construct_memory_path(memory_path, pid);
+    TRACE("Memory path constructed: %s", memory_path);
+    if (error_occurred()) {
+        return 0;
+    }
+
+    int const fd = open(memory_path, O_RDONLY);
+    if (fd == -1) {
+        t_errno = T_EOPEN;
+        return 0;
+    }
+    TRACE("Opening process file success");
+
+
+    if (lseek(fd, address, SEEK_SET) == -1) {
+        t_errno = T_EREAD;
+        return 0;
+    }
+
+    intptr_t result = 0;
+    if (read(fd, &result, sizeof(result)) == -1) {
+        t_errno = T_EREAD;
+        return 0;
+    }
+
+    if (close(fd) == -1) {
+        t_errno = T_ECLOSE;
+        return 0;
+    }
+    TRACE("Read %#lx from process %d at %#lx", result, pid, address);
 
     return result;
 }

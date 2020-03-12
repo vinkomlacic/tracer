@@ -54,6 +54,9 @@ extern int call_function(pstate_t *pstate, char const function_to_call[], int ar
 extern int call_function_in_lib(pstate_t *pstate, char const function_to_call[], char const lib[], int arg);
 
 
+extern intptr_t call_posix_memalign(pstate_t *pstate, size_t alignment, size_t size);
+
+
 /**
  * Detaches from the target process.
  *
