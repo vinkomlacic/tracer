@@ -190,6 +190,55 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
 }
 
 
+extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address, size_t const length, int const prot) {
+    // TODO validate pstate
+    // TODO extract address in a function
+    intptr_t address = get_address_after_changes(pstate);
+
+    intptr_t const function_address = get_mprotect_address(pstate->name);
+    if (function_address == 0L && error_occurred()) return;
+    DEBUG("Function address in %s: %#lx", pstate->name, function_address);
+
+    if (has_changes(pstate) == false) pstate->change_address = address;
+
+    DEBUG("Setting up indirect call to posix_memalign %%rax = %#lx", function_address);
+    struct user_regs_struct regs = get_regs(pstate->pid);
+    regs.rax = (unsigned long long int) function_address;
+    regs.rdi = (unsigned long long int) start_address;
+    regs.rsi = (unsigned long long int) length;
+    regs.rdx = (unsigned long long int) prot;
+
+    if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
+        t_errno = T_EPTRACE;
+        return;
+    }
+
+    DEBUG("Injecting indirect call to the process memory");
+    uint8_t const indirect_call[] = {0xFF, 0xD0};
+    inject_code(pstate, sizeof(indirect_call), indirect_call);
+    if (error_occurred()) return;
+
+    intptr_t breakpoint_address = get_address_after_changes(pstate);
+    set_breakpoint(breakpoint_address, pstate);
+    if (error_occurred()) return;
+
+#ifdef DEBUG_ENABLE
+        uint8_t bytes[4] = {0};
+    for (int i = 0; i < 4; i++) {
+        bytes[i] = proc_read_byte(pstate->pid, pstate->change_address + i);
+    }
+    DEBUG("======== Changed memory = %#x %#x %#x %#x", bytes[0], bytes[1], bytes[2], bytes[3]);
+#endif
+
+    DEBUG("Executing indirect call and interrupt");
+    pcontinue(pstate->pid);
+    if (error_occurred()) return;
+
+    wait_for_bp(pstate->pid);
+    if (error_occurred()) return;
+}
+
+
 extern void pdetach(pid_t const pid) {
     DEBUG("rip: %#llx", get_regs(pid).rip);
     if (ptrace(PTRACE_DETACH, pid, 0, 0) == -1) {
@@ -219,6 +268,18 @@ static void inject_indirect_call_at(
     DEBUG("Injecting indirect call to the process memory");
     uint8_t const indirect_call[] = {0xFF, 0xD0};
     inject_code(pstate, sizeof(indirect_call), indirect_call);
+}
+
+
+extern size_t inject_virus(pid_t const pid, intptr_t const start_address, size_t const size, uint8_t const code[]) {
+    size_t i = 0;
+    for (; i < size; i++) {
+        intptr_t address = start_address + i;
+        proc_write_byte(pid, address, code[i]);
+        if (error_occurred()) return 0;
+    }
+
+    return i;
 }
 
 

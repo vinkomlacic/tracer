@@ -57,6 +57,12 @@ extern int call_function_in_lib(pstate_t *pstate, char const function_to_call[],
 extern intptr_t call_posix_memalign(pstate_t *pstate, size_t alignment, size_t size);
 
 
+extern void call_mprotect(pstate_t *pstate, intptr_t start_address, size_t length, int prot);
+
+
+extern size_t inject_virus(pid_t pid, intptr_t start_address, size_t size, uint8_t const code[]);
+
+
 /**
  * Detaches from the target process.
  *

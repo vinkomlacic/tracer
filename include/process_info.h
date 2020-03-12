@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#define MAX_CODE_LENGTH 1024
+
 /**
  * TODO get rid of dependency on the target name => use PID instead
  */
@@ -25,6 +27,12 @@ extern intptr_t get_symbol_address_in_target(char const target[], char const sym
  * 0UL is returned and t_errno code is set.
  */
 extern intptr_t get_symbol_address_in_lib(char const target[], char const libname[], char const symbol[]);
+
+
+extern intptr_t get_mprotect_address(char const target[]);
+
+
+extern size_t get_function_code(char const target[], intptr_t start_address, uint8_t code_output[]);
 
 
 /**

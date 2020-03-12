@@ -1,12 +1,19 @@
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include "process_control.h"
 #include "process_info.h"
 #include "t_error.h"
 #include "pstate_t.h"
+#include "procmem.h"
 
 #include "log.h"
+
+
+int virus(int argument) {
+    return 0;
+}
 
 
 int main(int const argc, char const * const argv[const]) {
@@ -46,12 +53,30 @@ int main(int const argc, char const * const argv[const]) {
     pstate.changed_regs.rip -= 1ULL;
     check_for_error();
 
-    size_t alignment = sizeof(unsigned long long);
-    size_t size = 16;
-    intptr_t allocated_address = call_posix_memalign(&pstate, alignment, size);
+    uint8_t code[MAX_CODE_LENGTH] = {0};
+    size_t code_size = get_function_code("tracer", (intptr_t) virus, code);
     check_for_error();
-    INFO("posix_memalign(%d, %d) => %#lx", alignment, size, allocated_address);
+
+    size_t alignment = sizeof(unsigned long long);
+    intptr_t memory_address = call_posix_memalign(&pstate, alignment, code_size);
+    check_for_error();
+    INFO("posix_memalign(%d, %d) => %#lx", alignment, code_size, memory_address);
     INFO("Address of the allocated memory is stored on top of the stack.");
+
+    call_mprotect(&pstate, memory_address, code_size, PROT_EXEC);
+    check_for_error();
+    INFO("called mprotect(%#lx, %d, %d)", memory_address, code_size, PROT_EXEC);
+
+    size_t injected_code = inject_virus(pstate.pid, memory_address, code_size, code);
+    check_for_error();
+    INFO("Injected %d bytes of the virus", injected_code);
+
+#ifdef DEBUG_ENABLE
+    DEBUG("Looking up injected code in tracee to verify");
+    for (size_t i = 0; i < code_size; i++) {
+        DEBUG("<%#lx>: %#x", memory_address, proc_read_byte(pstate.pid, memory_address + i));
+    }
+#endif
 
     INFO("Reverting process state before first change. Address of first change: %#lx", pstate.change_address);
     revert_to(&pstate);
