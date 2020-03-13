@@ -9,9 +9,6 @@
 #include "options_t.h"
 
 
-typedef enum {TARGET, SYMBOL, FUNCTION_TO_CALL, ARGUMENT} option_t;
-
-
 /**
  * Parses the argv array and returns a struct containing all values provided.
  * The function heavily relies on the getopt GNU library.
@@ -29,15 +26,3 @@ typedef enum {TARGET, SYMBOL, FUNCTION_TO_CALL, ARGUMENT} option_t;
  * On success, populated options_t struct is returned.
  */
 extern options_t parse_options(int argc, char const * const argv[]);
-
-
-/**
- * Checks if the option is present in the options_t struct.
- *
- * If an unknown option passed to this function means it has not been addressed
- * by the function ergo, implementation fault.
- * The user provides an enum type which means an unexpected value is impossible
- * to pass. Nevertheless, in this case t_errno is set to T_ECLI_ARGV and false is
- * returned.
- */
-extern bool option_is_present(options_t const * options, option_t option);

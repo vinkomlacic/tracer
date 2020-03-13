@@ -24,3 +24,6 @@ extern intptr_t proc_read_word(pid_t pid, intptr_t address);
  * In case an error occurs t_errno value is set.
  */
 extern void proc_write_byte(pid_t pid, intptr_t address, uint8_t value);
+
+
+extern void proc_write_word(pid_t pid, intptr_t address, intptr_t word);

@@ -51,6 +51,9 @@ extern void wait_for_bp(pid_t pid);
 extern int call_function(pstate_t *pstate, char const function_to_call[], int arg);
 
 
+extern int call_virus(pstate_t *pstate, intptr_t virus_address, int arg);
+
+
 extern int call_function_in_lib(pstate_t *pstate, char const function_to_call[], char const lib[], int arg);
 
 
@@ -60,8 +63,16 @@ extern intptr_t call_posix_memalign(pstate_t *pstate, size_t alignment, size_t s
 extern void call_mprotect(pstate_t *pstate, intptr_t start_address, size_t length, int prot);
 
 
+extern void call_free(pstate_t * pstate, intptr_t address);
+
+
 extern size_t inject_virus(pid_t pid, intptr_t start_address, size_t size, uint8_t const code[]);
 
+
+extern void scrub_virus(pid_t pid, intptr_t start_address, size_t size);
+
+
+extern void inject_trampoline(pid_t pid, intptr_t function_address, intptr_t address);
 
 /**
  * Detaches from the target process.

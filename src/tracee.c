@@ -8,16 +8,22 @@ static void f1(void);
 static int f2(int arg) __attribute__ ((unused));
 
 int main(void) {
-    printf("Press ENTER to start");
+    printf("Press ENTER to start\n");
     getchar();
+    int c = 0;
 
-    f1();
+    do {
+        printf("Press ENTER to call f1, q for call and exit\n");
+        c = getchar();
+
+        f1();
+    } while (c != 'q');
 
     return EXIT_SUCCESS;
 }
 
 static void f1(void) {
-    printf("Press ENTER to exit...");
+    printf("f1: press ENTER...\n");
     getchar();
     printf("Errno: %s\n", strerror(errno));
 }

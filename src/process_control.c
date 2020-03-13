@@ -96,6 +96,40 @@ extern int call_function(pstate_t * const pstate, char const function_to_call[co
 }
 
 
+extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int const arg) {
+    // TODO validate pstate
+    // TODO extract address in a function
+    intptr_t address = get_address_after_changes(pstate);
+
+    inject_indirect_call_at(address, virus_address, arg, pstate);
+    if (error_occurred()) return -1;
+
+    intptr_t breakpoint_address = get_address_after_changes(pstate);
+    set_breakpoint(breakpoint_address, pstate);
+    if (error_occurred()) return -1;
+
+#ifdef DEBUG_ENABLE
+        uint8_t bytes[4] = {0};
+    for (int i = 0; i < 4; i++) {
+        bytes[i] = proc_read_byte(pstate->pid, pstate->change_address + i);
+    }
+    DEBUG("======== Changed memory = %#x %#x %#x %#x", bytes[0], bytes[1], bytes[2], bytes[3]);
+#endif
+
+    DEBUG("Executing indirect call and interrupt");
+    pcontinue(pstate->pid);
+    if (error_occurred()) return -1;
+
+    wait_for_bp(pstate->pid);
+    if (error_occurred()) return -1;
+
+    int ret_value = (int) get_regs(pstate->pid).rax;
+    if (error_occurred()) return -1;
+
+    return ret_value;
+}
+
+
 extern int call_function_in_lib(pstate_t * const pstate, char const function_to_call[const], char const lib[const], int const arg) {
     // TODO validate pstate
     // TODO extract address in a function
@@ -348,6 +382,42 @@ extern size_t inject_virus(pid_t const pid, intptr_t const start_address, size_t
     }
 
     return i;
+}
+
+
+extern void scrub_virus(pid_t const pid, intptr_t const start_address, size_t const size) {
+    for (size_t i = 0; i < size; i++) {
+        intptr_t address = start_address + i;
+        proc_write_byte(pid, address, 0x00);
+        if (error_occurred()) return;
+    }
+}
+
+
+extern void inject_trampoline(pid_t const pid, intptr_t const function_address, intptr_t const address) {
+    uint8_t const jump_instruction[] = {0x48, 0xB8};
+    uint8_t const end_instruction[] = {0xFF, 0xE0, 0xC3};
+
+    DEBUG("First instruction that will be replaced: %#lx", proc_read_byte(pid, address));
+
+    intptr_t current_address = address;
+    inject_virus(pid, current_address, sizeof(jump_instruction), jump_instruction);
+    current_address += sizeof(jump_instruction);
+    if (error_occurred()) return;
+
+    proc_write_word(pid, current_address, function_address);
+    current_address += sizeof(function_address);
+    if (error_occurred()) return;
+
+    inject_virus(pid, current_address, sizeof(end_instruction), end_instruction);
+
+    DEBUG("Injected trampoline to %#lx at %#lx", function_address, address);
+#ifdef DEBUG_ENABLE
+    DEBUG("Looking up injected code in tracee to verify");
+        for (size_t i = 0; i < 13; i++) {
+            DEBUG("<%#lx>: %#x", address + i, proc_read_byte(pid, address + i));
+        }
+#endif
 }
 
 

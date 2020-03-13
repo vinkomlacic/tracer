@@ -6,20 +6,22 @@
 #include "process_info.h"
 #include "t_error.h"
 #include "pstate_t.h"
+#include "options.h"
 #include "procmem.h"
 
 #include "log.h"
 
 
 int virus(int argument) {
-    printf("Virus called! Arg = %d", argument);
-    return 0;
+    return 150;
 }
 
 
 int main(int const argc, char const * const argv[const]) {
     char const target[] = "tracee";
     char const symbol[] = "f1";
+    options_t options = parse_options(argc, argv);
+    check_for_error();
 
     INFO("Looking up %s in the targets symbol table...", symbol);
     intptr_t const entry_function = get_symbol_address_in_target(target, symbol);
@@ -71,18 +73,36 @@ int main(int const argc, char const * const argv[const]) {
     check_for_error();
     INFO("Injected %d bytes of the virus", injected_code);
 
-    // int ret_val = call_function(&pstate, "virus", 5);
+    if (options.clean) {
+        int arg = 5;
+        int ret_val = call_virus(&pstate, memory_address, arg);
+        check_for_error();
+        INFO("Function call: virus(%d) => %d", arg, ret_val);
+
+        INFO("Deleting virus from memory");
+        scrub_virus(pstate.pid, memory_address, code_size);
+
+        INFO("Deallocated virus memory");
+        call_free(&pstate, memory_address);
+        check_for_error();
+    }
 
 #ifdef DEBUG_ENABLE
     DEBUG("Looking up injected code in tracee to verify");
     for (size_t i = 0; i < code_size; i++) {
-        DEBUG("<%#lx>: %#x", memory_address, proc_read_byte(pstate.pid, memory_address + i));
+        DEBUG("<%#lx>: %#x", memory_address + i, proc_read_byte(pstate.pid, memory_address + i));
     }
 #endif
 
     INFO("Reverting process state before first change. Address of first change: %#lx", pstate.change_address);
     revert_to(&pstate);
     check_for_error();
+
+    if (options.clean == false) {
+        inject_trampoline(pstate.pid, memory_address, entry_function);
+        check_for_error();
+        INFO("Injected trampoline. Releasing %s", target);
+    }
 
     INFO("Detaching the target process.");
     pdetach(pstate.pid);
