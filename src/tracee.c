@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 
 static void f1(void);
@@ -17,6 +19,7 @@ int main(void) {
 static void f1(void) {
     printf("Press ENTER to exit...");
     getchar();
+    printf("Errno: %s\n", strerror(errno));
 }
 
 static int f2(int const arg) {

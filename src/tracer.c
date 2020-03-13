@@ -12,6 +12,7 @@
 
 
 int virus(int argument) {
+    printf("Virus called! Arg = %d", argument);
     return 0;
 }
 
@@ -57,19 +58,20 @@ int main(int const argc, char const * const argv[const]) {
     size_t code_size = get_function_code("tracer", (intptr_t) virus, code);
     check_for_error();
 
-    size_t alignment = sizeof(unsigned long long);
+    int const alignment = getpagesize();
     intptr_t memory_address = call_posix_memalign(&pstate, alignment, code_size);
     check_for_error();
     INFO("posix_memalign(%d, %d) => %#lx", alignment, code_size, memory_address);
-    INFO("Address of the allocated memory is stored on top of the stack.");
 
-    call_mprotect(&pstate, memory_address, code_size, PROT_EXEC);
+    call_mprotect(&pstate, memory_address, getpagesize(), PROT_READ|PROT_WRITE|PROT_EXEC);
     check_for_error();
-    INFO("called mprotect(%#lx, %d, %d)", memory_address, code_size, PROT_EXEC);
+    INFO("called mprotect(%#lx, %d, %d)", memory_address, getpagesize(), PROT_EXEC | PROT_WRITE | PROT_EXEC);
 
     size_t injected_code = inject_virus(pstate.pid, memory_address, code_size, code);
     check_for_error();
     INFO("Injected %d bytes of the virus", injected_code);
+
+    // int ret_val = call_function(&pstate, "virus", 5);
 
 #ifdef DEBUG_ENABLE
     DEBUG("Looking up injected code in tracee to verify");
