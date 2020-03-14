@@ -7,10 +7,6 @@
 #include "log.h"
 #include "procmem.h"
 
-/**
- * TODO proc_read_byte and proc_read_word have a lot of duplicated code => REFACTOR
- */
-
 
 static void construct_memory_path(char memory_path[static MEMORY_PATH_MAX], pid_t pid);
 

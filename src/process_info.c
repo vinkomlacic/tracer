@@ -113,7 +113,6 @@ extern size_t get_function_code(char const target[const], intptr_t const start_a
             break;
         }
         if ((i + 1) == MAX_CODE_LENGTH) {
-            // TODO set a specific error
             t_errno = T_ERROR;
             return 0;
         }

@@ -5,7 +5,7 @@
 #include "t_error.h"
 #include "procmem.h"
 #include "process_info.h"
-#include "pstate_t.h"
+#include "pstate.h"
 
 
 extern pstate_t create_pstate(void) {
@@ -23,7 +23,6 @@ extern pstate_t create_pstate(void) {
 
 extern void save_process_regs(pstate_t *pstate) {
     if (pstate->pid == 0) {
-        // TODO handle error
         WARN("pstate pid uninitialized. Returning from save_process_regs");
         return;
     }

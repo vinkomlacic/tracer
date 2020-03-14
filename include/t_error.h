@@ -6,7 +6,6 @@
  * conform to custom needs and error messages in the program.
  * 
  * Use this in the Tracer program instead of directly reading errno or calling perror().
- * TODO: add support for providing contextual error messages
  */
 
 #include <stdbool.h>

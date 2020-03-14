@@ -5,7 +5,7 @@
 #include "process_control.h"
 #include "process_info.h"
 #include "t_error.h"
-#include "pstate_t.h"
+#include "pstate.h"
 #include "options.h"
 #include "procmem.h"
 
@@ -13,7 +13,7 @@
 
 
 int virus(int argument) {
-    return 150;
+    return argument + 1;
 }
 
 

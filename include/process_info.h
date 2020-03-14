@@ -5,10 +5,6 @@
 #define MAX_CODE_LENGTH 1024
 
 /**
- * TODO get rid of dependency on the target name => use PID instead
- */
-
-/**
  * Returns the address of a symbol in a currently running program.
  * 
  * If the process is not running or a symbol could not be found in the object file

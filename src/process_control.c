@@ -10,6 +10,7 @@
 #include "procmem.h"
 #include "log.h"
 #include "process_info.h"
+#include "pstate.h"
 #include "process_control.h"
 
 
@@ -59,8 +60,6 @@ extern void wait_for_bp(pid_t const pid) {
 
 
 extern int call_function(pstate_t * const pstate, char const function_to_call[const], int const arg) {
-    // TODO validate pstate
-    // TODO extract address in a function
     intptr_t address = get_address_after_changes(pstate);
 
     intptr_t const function_address = get_symbol_address_in_target(pstate->name, function_to_call);
@@ -97,8 +96,6 @@ extern int call_function(pstate_t * const pstate, char const function_to_call[co
 
 
 extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int const arg) {
-    // TODO validate pstate
-    // TODO extract address in a function
     intptr_t address = get_address_after_changes(pstate);
 
     inject_indirect_call_at(address, virus_address, arg, pstate);
@@ -131,8 +128,6 @@ extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int
 
 
 extern int call_function_in_lib(pstate_t * const pstate, char const function_to_call[const], char const lib[const], int const arg) {
-    // TODO validate pstate
-    // TODO extract address in a function
     intptr_t address = get_address_after_changes(pstate);
 
     intptr_t const function_address = get_symbol_address_in_lib(pstate->name, lib, function_to_call);
@@ -169,8 +164,6 @@ extern int call_function_in_lib(pstate_t * const pstate, char const function_to_
 
 
 extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignment, size_t const size) {
-    // TODO validate pstate
-    // TODO extract address in a function
     intptr_t address = get_address_after_changes(pstate);
 
     intptr_t const function_address = get_symbol_address_in_lib(pstate->name, "libc", "posix_memalign");
@@ -241,8 +234,6 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
 
 
 extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address, size_t const length, int const prot) {
-    // TODO validate pstate
-    // TODO extract address in a function
     intptr_t address = get_address_after_changes(pstate);
 
     intptr_t const function_address = get_mprotect_address(pstate->name);
@@ -297,8 +288,6 @@ extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address,
 
 
 extern void call_free(pstate_t * const pstate, intptr_t const address) {
-    // TODO validate pstate
-    // TODO extract address in a function
     intptr_t const function_address = get_symbol_address_in_lib(pstate->name, "libc", "free");
     if (function_address == 0L && error_occurred()) return;
     DEBUG("Function address in %s: %#lx", pstate->name, function_address);
