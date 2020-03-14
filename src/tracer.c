@@ -82,6 +82,10 @@ int main(int const argc, char const * const argv[const]) {
         INFO("Deleting virus from memory");
         scrub_virus(pstate.pid, memory_address, code_size);
 
+        INFO("Reverting permissions to original heap permissions on the memory region");
+        call_mprotect(&pstate, memory_address, getpagesize(), PROT_READ|PROT_WRITE);
+        check_for_error();
+
         INFO("Deallocated virus memory");
         call_free(&pstate, memory_address);
         check_for_error();
