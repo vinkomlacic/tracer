@@ -8,8 +8,8 @@
 #include "pstate.h"
 #include "options.h"
 #include "procmem.h"
-
 #include "log.h"
+
 
 
 int virus(int argument) {

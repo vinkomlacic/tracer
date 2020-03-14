@@ -4,6 +4,7 @@
 #include <errno.h>
 
 #include "log.h"
+
 #include "t_error.h"
 
 t_errno_t t_errno = T_SUCCESS;

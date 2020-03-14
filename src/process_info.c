@@ -7,8 +7,9 @@
 #include "t_error.h"
 #include "pread.h"
 #include "log.h"
-#include "process_info.h"
 #include "procmem.h"
+
+#include "process_info.h"
 
 
 static intptr_t get_symbol_offset(char const process_name[], char const symbol[]);

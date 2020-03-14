@@ -7,6 +7,8 @@
 #include "log.h"
 #include "options_t.h"
 
+#include "options.h"
+
 
 extern options_t parse_options(int const argc, char const * const argv[const]) {
     options_t options = {false};
