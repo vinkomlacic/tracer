@@ -5,7 +5,7 @@
 *   Work it out so everything works with PID.
     Piping to pgrep is expensive and that's what happens every time you call `get_pid(pid_t)`.
 
-### Add a specific error  
+### Add a specific error
 *   `get_function_code`: make a specific error when the function is too big (`> MAX_CODE_LEN`).
 
 ## 2. t_error
@@ -40,3 +40,20 @@
 ### Validation 
 *   Write down illegal pstate states and make functions that validate this state. Declare error codes and 
     define what exactly is an uninitialized state and how state must look like to be valid.
+
+## 6. options
+### Support more options
+*   Currently not everything is covered by the options (actually just the cleanup mode is covered) so
+    it's required to add more options to avoid hardcoding stuff like target process and target functions.
+*   Another note, a help option is needed as well so define exactly how the help should look like and
+    whether it should be printed on error (maybe only on some errors?) or only when `-h` option is
+    specified. 
+
+## 7. Testing
+### Test cases
+*   Test cases should be written in a separate document.
+### Test lib
+*   Test support is needed so choose a library for this.
+### Write tests according to the test case file
+*   After this write the test case in C code. 
+ 
