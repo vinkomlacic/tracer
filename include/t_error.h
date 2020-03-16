@@ -68,7 +68,7 @@ extern void check_for_error(void);
 
 
 /**
- * Checks if an error occured.
+ * Checks if an error occurred.
  * If error occurred returns true, otherwise false.
  */
 extern bool error_occurred(void);
