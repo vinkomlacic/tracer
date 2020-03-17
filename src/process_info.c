@@ -87,7 +87,7 @@ extern size_t get_function_code(pid_t const pid, intptr_t const start_address, u
             break;
         }
         if ((i + 1) == MAX_CODE_LENGTH) {
-            t_errno = T_ERROR;
+            t_errno = T_EFUNC_TOO_BIG;
             return 0;
         }
     }

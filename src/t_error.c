@@ -76,6 +76,10 @@ extern void t_perror(char const message[const]) {
             ERROR("%s: wait / waitpid / waitid error.", message);
             break;
 
+        case T_FUNC_TOO_BIG:
+            ERROR("%s: function code is too big.", message);
+            break;
+
         default:
           ERROR("%s: unrecognized error.", message);
     }

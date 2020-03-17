@@ -5,7 +5,7 @@
 *   Work it out so everything works with PID.
     Piping to pgrep is expensive and that's what happens every time you call `get_pid(pid_t)`.
 
-### Add a specific error
+### ~~Add a specific error~~
 *   `get_function_code`: make a specific error when the function is too big (`> MAX_CODE_LEN`).
 
 ## 2. t_error
