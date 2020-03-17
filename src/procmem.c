@@ -146,7 +146,7 @@ extern void proc_write_word(pid_t const pid, intptr_t const address, intptr_t co
     if (close(fd) == -1) {
         t_errno = T_ECLOSE;
     }
-    TRACE("Successfully written %#x to %d at %#lx", value, pid, address);
+    TRACE("Successfully written %#x to %d at %#lx", word, pid, address);
 }
 
 
