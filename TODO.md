@@ -47,9 +47,21 @@
     it's required to add more options to avoid hardcoding stuff like target process and target functions.
 *   Another note, a help option is needed as well so define exactly how the help should look like and
     whether it should be printed on error (maybe only on some errors?) or only when `-h` option is
-    specified. 
+    specified.
+    
+## 7. Warnings
+### Clean up warnings
+*   It is important to resolve all of the warnings that are specified in the warnings file provided.
+    Either correct them or suppress if they are actually a false positive.
+*   This should be done on both Clang and GCC compilers to cover more cases.
 
-## 7. Testing
+
+## 8. Run dynamic analysis
+### ASAN
+### MSAN (Clang only)
+### UbSAN  
+
+## 9. Testing
 ### Test cases
 *   Test cases should be written in a separate document.
 ### Test lib
