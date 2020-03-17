@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #define MAX_CODE_LENGTH 1024
+#define LIBC_NAME "libc"
 
 /**
  * Returns the address of a symbol in a currently running program.
@@ -13,7 +14,7 @@
  * Also, if any other error occurs the same value is return and an error code is
  * set.
  */
-extern intptr_t get_symbol_address_in_target(char const target[], char const symbol[]);
+extern intptr_t get_symbol_address_in_target(pid_t pid, char const symbol[]);
 
 
 /**
@@ -22,13 +23,13 @@ extern intptr_t get_symbol_address_in_target(char const target[], char const sym
  * If the process is not running or a symbol could not be found in the object file
  * 0UL is returned and t_errno code is set.
  */
-extern intptr_t get_symbol_address_in_lib(char const target[], char const libname[], char const symbol[]);
+extern intptr_t get_symbol_address_in_libc(pid_t pid, const char *symbol);
 
 
-extern intptr_t get_mprotect_address(char const target[]);
+extern intptr_t get_mprotect_address(pid_t pid);
 
 
-extern size_t get_function_code(char const target[], intptr_t start_address, uint8_t code_output[]);
+extern size_t get_function_code(pid_t pid, intptr_t start_address, uint8_t code_output[]);
 
 
 /**

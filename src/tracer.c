@@ -23,17 +23,17 @@ int main(int const argc, char const * const argv[const]) {
     options_t options = parse_options(argc, argv);
     check_for_error();
 
-    INFO("Looking up %s in the targets symbol table...", symbol);
-    intptr_t const entry_function = get_symbol_address_in_target(target, symbol);
-    check_for_error();
-    INFO("Symbol %s found at address: %#lx", symbol, entry_function);
-
     INFO("Initializing pstate struct. Getting pid of the target...");
     pstate_t pstate = create_pstate();
     strncpy(pstate.name, target, sizeof(pstate.name) - 1);
     pstate.pid = get_pid(target);
     check_for_error();
     INFO("PID found: %d", pstate.pid);
+
+    INFO("Looking up %s in the targets symbol table...", symbol);
+    intptr_t const entry_function = get_symbol_address_in_target(pstate.pid, symbol);
+    check_for_error();
+    INFO("Symbol %s found at address: %#lx", symbol, entry_function);
 
     pattach(pstate.pid);
     check_for_error();
@@ -57,7 +57,7 @@ int main(int const argc, char const * const argv[const]) {
     check_for_error();
 
     uint8_t code[MAX_CODE_LENGTH] = {0};
-    size_t code_size = get_function_code("tracer", (intptr_t) virus, code);
+    size_t code_size = get_function_code(getpid(), (intptr_t) virus, code);
     check_for_error();
 
     int const alignment = getpagesize();

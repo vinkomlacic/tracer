@@ -1,7 +1,7 @@
 # TODO
 
 ## 1. process_info
-### Get rid of dependency on the target name
+### ~~Get rid of dependency on the target name~~
 *   Work it out so everything works with PID.
     Piping to pgrep is expensive and that's what happens every time you call `get_pid(pid_t)`.
 
@@ -48,6 +48,11 @@
 *   Another note, a help option is needed as well so define exactly how the help should look like and
     whether it should be printed on error (maybe only on some errors?) or only when `-h` option is
     specified.
+    
+## 7. Logging
+### Fix putting functions in macros
+*   If a function that uses logs is put into the log (e.g. `DEBUG(get_pid("tracee"))`) the output
+    will be messed up a bit because the DEBUG tag will be around the lower level output of the logging.
     
 ## 7. Warnings
 ### Clean up warnings

@@ -63,7 +63,7 @@ extern void wait_for_bp(pid_t const pid) {
 extern int call_function(pstate_t * const pstate, char const function_to_call[const], int const arg) {
     intptr_t address = get_address_after_changes(pstate);
 
-    intptr_t const function_address = get_symbol_address_in_target(pstate->name, function_to_call);
+    intptr_t const function_address = get_symbol_address_in_target(pstate->pid, function_to_call);
     if (function_address == 0L && error_occurred()) return -1;
     DEBUG("Function address in %s: %#lx", pstate->name, function_address);
 
@@ -131,7 +131,7 @@ extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int
 extern int call_function_in_lib(pstate_t * const pstate, char const function_to_call[const], char const lib[const], int const arg) {
     intptr_t address = get_address_after_changes(pstate);
 
-    intptr_t const function_address = get_symbol_address_in_lib(pstate->name, lib, function_to_call);
+    intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, function_to_call);
     if (function_address == 0L && error_occurred()) return -1;
     DEBUG("Function address in %s: %#lx", pstate->name, function_address);
 
@@ -167,7 +167,7 @@ extern int call_function_in_lib(pstate_t * const pstate, char const function_to_
 extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignment, size_t const size) {
     intptr_t address = get_address_after_changes(pstate);
 
-    intptr_t const function_address = get_symbol_address_in_lib(pstate->name, "libc", "posix_memalign");
+    intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, "posix_memalign");
     if (function_address == 0L && error_occurred()) return -1;
     DEBUG("Function address in %s: %#lx", pstate->name, function_address);
 
@@ -237,7 +237,7 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
 extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address, size_t const length, int const prot) {
     intptr_t address = get_address_after_changes(pstate);
 
-    intptr_t const function_address = get_mprotect_address(pstate->name);
+    intptr_t const function_address = get_mprotect_address(pstate->pid);
     if (function_address == 0L && error_occurred()) return;
     DEBUG("Function address in %s: %#lx", pstate->name, function_address);
 
@@ -289,7 +289,7 @@ extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address,
 
 
 extern void call_free(pstate_t * const pstate, intptr_t const address) {
-    intptr_t const function_address = get_symbol_address_in_lib(pstate->name, "libc", "free");
+    intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, "free");
     if (function_address == 0L && error_occurred()) return;
     DEBUG("Function address in %s: %#lx", pstate->name, function_address);
 
