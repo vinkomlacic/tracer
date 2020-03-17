@@ -10,6 +10,8 @@
 
 #include <stdbool.h>
 
+#define MAX_MESSAGE_SIZE 160
+
 
 typedef enum {
   T_SUCCESS = 0,
@@ -44,7 +46,7 @@ typedef enum {
   T_EWRITE = -19,                 // generic write error
   T_EPTRACE = -20,                // ptrace error
   T_EWAIT = -21,                  // wait / waitpid / waitid error
-  T_FUNC_TOO_BIG = -22,           // function code is too big
+  T_EFUNC_TOO_BIG = -22,           // function code is too big
 } t_errno_t;
 
 
@@ -59,6 +61,12 @@ extern t_errno_t t_errno;
  * Error is outputted to stderr stream.
  */
 extern void t_perror(char const message[]);
+
+
+/**
+ * Stores the string equivalent of the error code to the output string.
+ */
+extern void t_strerror(t_errno_t error_code, size_t string_length, char output[]);
 
 /**
  * Checks the t_errno value and exits the process in case the value is anything other than success.

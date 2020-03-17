@@ -14,7 +14,7 @@
     only a message is printed corresponding to the error code. Using macros and structs,
     actual line number and file could be reported with a customized message.
     
-### `t_strerror`
+### ~~t_strerror~~
 *   Define `t_strerror` function which is analogous to the strerror from `string.h` header 
     (returns the error message for a certain error code).
 

@@ -11,9 +11,16 @@ t_errno_t t_errno = T_SUCCESS;
 
 
 extern void t_perror(char const message[const]) {
+    char error_message[MAX_MESSAGE_SIZE] = {0};
+    t_strerror(t_errno, MAX_MESSAGE_SIZE-1, error_message);
+    ERROR("%s: %s", message, error_message);
+}
+
+
+extern void t_strerror(t_errno_t const error_code, size_t const string_length, char output[const]) {
     switch (t_errno) {
         case T_SUCCESS:
-            ERROR("No error");
+            strncpy(output, "No error", string_length);
             break;
 
         case T_ERROR:
@@ -25,63 +32,63 @@ extern void t_perror(char const message[const]) {
         case T_EREAD:
         case T_EWRITE:
         case T_EPTRACE:
-            ERROR("%s: %s", message, strerror(errno));
+            strncpy(output, strerror(errno), string_length);
             break;
 
         case T_EFGETS:
-            ERROR("%s: fgets failed reading from a stream.", message);
+            strncpy(output, "fgets failed reading from a stream.", string_length);
             break;
 
         case T_EPRINTF:
-            ERROR("%s: function from printf family failed printing to a stream.", message);
+            strncpy(output, "function from printf family failed printing to a stream.", string_length);
             break;
 
         case T_ECLI_ARGV:
-            ERROR("%s: error reading command line arguments.", message);
+            strncpy(output, "error reading command line arguments.", string_length);
             break;
 
         case T_EVALUE_NOT_FOUND:
-            ERROR("%s: value not found in an array.", message);
+            strncpy(output, "value not found in an array.", string_length);
             break;
 
         case T_EPROC_NOT_RUNNING:
-            ERROR("%s: target process not running.", message);
+            strncpy(output, "target process not running.", string_length);
             break;
 
         case T_ESYMBOL_NOT_FOUND:
-            ERROR("%s: specified symbol could not found in the object file.", message);
+            strncpy(output, "specified symbol could not found in the object file.", string_length);
             break;
 
         case T_ECLI_EMPTY:
-            ERROR("%s: one of the options has no value.", message);
+            strncpy(output, "one of the options has no value.", string_length);
             break;
 
         case T_ECLI_REQ:
-            ERROR("%s: required option is missing.", message);
+            strncpy(output, "required option is missing.", string_length);
             break;
 
         case T_ENULL_ARG:
-            ERROR("%s: null argument passed to a function.", message);
+            strncpy(output, "null argument passed to a function.", string_length);
             break;
 
         case T_EENCODING:
-            ERROR("%s: encoding error while copying string.", message);
+            strncpy(output, "encoding error while copying string.", string_length);
             break;
 
         case T_ESTR_TRUNC:
-            ERROR("%s: string truncated while copying string.", message);
+            strncpy(output, "string truncated while copying string.", string_length);
             break;
 
         case T_EWAIT:
-            ERROR("%s: wait / waitpid / waitid error.", message);
+            strncpy(output, "wait / waitpid / waitid error.", string_length);
             break;
 
-        case T_FUNC_TOO_BIG:
-            ERROR("%s: function code is too big.", message);
+        case T_EFUNC_TOO_BIG:
+            strncpy(output, "function code is too big.", string_length);
             break;
 
         default:
-          ERROR("%s: unrecognized error.", message);
+            strncpy(output, "unrecognized error.", string_length);
     }
 }
 
