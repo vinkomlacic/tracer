@@ -36,7 +36,7 @@ extern void save_process_regs(pstate_t *pstate) {
 
 extern void revert_to(pstate_t const * const pstate) {
     if (pstate == NULL) {
-        t_errno = T_ENULL_ARG;
+        raise(T_ENULL_ARG, "revert_to - pstate");
         return;
     }
 
@@ -50,7 +50,7 @@ extern void revert_to(pstate_t const * const pstate) {
 
     DEBUG("Restoring old registers");
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &(pstate->changed_regs)) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "revert_to");
         return;
     }
 
@@ -68,7 +68,7 @@ extern void append_code_to_pstate(pstate_t * const pstate, uint8_t const code) {
 
 extern intptr_t get_address_after_changes(pstate_t const * const pstate) {
     if (pstate == NULL) {
-        t_errno = T_ENULL_ARG;
+        raise(T_ENULL_ARG, "get_address_after_changes - pstate");
         return 0;
     }
 
@@ -78,7 +78,7 @@ extern intptr_t get_address_after_changes(pstate_t const * const pstate) {
 
 extern bool has_changes(pstate_t const * const pstate) {
     if (pstate == NULL) {
-        t_errno = T_ENULL_ARG;
+        raise(T_ENULL_ARG, "has_changes - pstate");
         return true;
     }
 
@@ -89,7 +89,7 @@ extern bool has_changes(pstate_t const * const pstate) {
 extern struct user_regs_struct get_regs(pid_t const pid) {
     struct user_regs_struct regs;
     if (ptrace(PTRACE_GETREGS, pid, NULL, &regs) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "get_regs");
     }
 
     return regs;

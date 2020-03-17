@@ -21,14 +21,14 @@ static void inject_code(pstate_t *pstate, unsigned code_size, uint8_t const code
 
 extern void pattach(pid_t const pid) {
     if (ptrace(PTRACE_ATTACH, pid, 0, 0) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "pattach");
         return;
     }
 
 
     DEBUG("PTRACE_ATTACH executed. Waiting for stop signal.");
     if (waitpid(pid, NULL, WSTOPPED) == -1) {
-        t_errno = T_EWAIT;
+        raise(T_EWAIT, "pattach");
     }
     DEBUG("Tracee process stopped. Tracee is attached.");
 }
@@ -37,7 +37,7 @@ extern void pattach(pid_t const pid) {
 extern void pcontinue(pid_t const pid) {
     DEBUG("rip: %#llx", get_regs(pid).rip);
     if (ptrace(PTRACE_CONT, pid, 0, SIGCONT) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "pcontinue");
     }
     DEBUG("SIGCONT sent");
 }
@@ -54,7 +54,7 @@ extern void set_breakpoint(intptr_t const address, pstate_t * const pstate) {
 extern void wait_for_bp(pid_t const pid) {
     DEBUG("Waiting for breakpoint");
     if (waitpid(pid, NULL, 0) == -1) {
-        t_errno = T_EWAIT;
+        raise(T_EWAIT, "wait_for_bp");
     }
     DEBUG("Breakpoint caught or process died");
 }
@@ -182,7 +182,7 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
     regs.rdx = (unsigned long long int) size;
 
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "call_posix_memalign");
         return 0;
     }
 
@@ -212,7 +212,8 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
 
     struct user_regs_struct regs_after_call = get_regs(pstate->pid);
     if (regs_after_call.rax != 0) {
-        t_errno = T_ERROR;
+        // TODO place more detailed error
+        raise(T_ERROR, "call_posix_memalign");
         DEBUG("Function returned %d", regs_after_call.rax);
         return -1;
     }
@@ -226,7 +227,7 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
     DEBUG("Restoring stack");
     regs_after_call.rsp += 8ULL;
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs_after_call) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "call_posix_memalign");
         return -1;
     }
 
@@ -251,7 +252,7 @@ extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address,
     regs.rdx = (unsigned long long int) prot;
 
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "call_mprotect");
         return;
     }
 
@@ -301,7 +302,7 @@ extern void call_free(pstate_t * const pstate, intptr_t const address) {
     regs.rdi = (unsigned long long int) address;
 
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "call_free");
         return;
     }
 
@@ -334,7 +335,7 @@ extern void call_free(pstate_t * const pstate, intptr_t const address) {
 extern void pdetach(pid_t const pid) {
     DEBUG("rip: %#llx", get_regs(pid).rip);
     if (ptrace(PTRACE_DETACH, pid, 0, 0) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "pdetach");
     }
     DEBUG("Process %d detached", pid);
 }
@@ -353,7 +354,7 @@ static void inject_indirect_call_at(
     regs.rax = (unsigned long long int) function_address;
     regs.rdi = (unsigned long long int) arg;
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
-        t_errno = T_EPTRACE;
+        raise(T_EPTRACE, "inject_indirect_call_at");
         return;
     }
 

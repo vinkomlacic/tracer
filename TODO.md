@@ -9,7 +9,7 @@
 *   `get_function_code`: make a specific error when the function is too big (`> MAX_CODE_LEN`).
 
 ## 2. t_error
-### Contextual error reporting
+### ~~Contextual error reporting~~
 *   Add support for context reporting in error messages. Currently, what happens is that
     only a message is printed corresponding to the error code. Using macros and structs,
     actual line number and file could be reported with a customized message.

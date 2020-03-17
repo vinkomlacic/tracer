@@ -22,25 +22,25 @@ extern uint8_t proc_read_byte(pid_t const pid, intptr_t const address) {
 
     int const fd = open(memory_path, O_RDONLY);
     if (fd == -1) {
-        t_errno = T_EOPEN;
+        raise(T_EOPEN, "proc_read_byte - can't open %s", memory_path);
         return 0;
     }
     TRACE("Opening process file success");
 
 
     if (lseek(fd, address, SEEK_SET) == -1) {
-        t_errno = T_EREAD;
+        raise(T_EREAD, "proc_read_byte - error seeking %s to %#lx", memory_path, address);
         return 0;
     }
 
     uint8_t result = 0;
     if (read(fd, &result, sizeof(result)) == -1) {
-        t_errno = T_EREAD;
+        raise(T_EREAD, "proc_read_byte - error reading %s at %#lx", memory_path, address);
         return 0;
     }
 
     if (close(fd) == -1) {
-        t_errno = T_ECLOSE;
+        raise(T_ECLOSE, "proc_read_byte - error closing %s", memory_path);
         return 0;
     }
     TRACE("Read %#x from process %d at %#lx", result, pid, address);
@@ -59,25 +59,25 @@ extern intptr_t proc_read_word(pid_t const pid, intptr_t const address) {
 
     int const fd = open(memory_path, O_RDONLY);
     if (fd == -1) {
-        t_errno = T_EOPEN;
+        raise(T_EOPEN, "proc_read_word - error opening %s", memory_path);
         return 0;
     }
     TRACE("Opening process file success");
 
 
     if (lseek(fd, address, SEEK_SET) == -1) {
-        t_errno = T_EREAD;
+        raise(T_EREAD, "proc_read_word - error seeking %s to %#lx", memory_path, address);
         return 0;
     }
 
     intptr_t result = 0;
     if (read(fd, &result, sizeof(result)) == -1) {
-        t_errno = T_EREAD;
+        raise(T_EREAD, "proc_read_word - error reading %s at %#lx", memory_path, address);
         return 0;
     }
 
     if (close(fd) == -1) {
-        t_errno = T_ECLOSE;
+        raise(T_ECLOSE, "proc_read_word - error closing %s", memory_path);
         return 0;
     }
     TRACE("Read %#lx from process %d at %#lx", result, pid, address);
@@ -96,23 +96,23 @@ extern void proc_write_byte(pid_t const pid, intptr_t const address, uint8_t con
 
     int const fd = open(memory_path, O_WRONLY);
     if (fd == -1) {
-        t_errno = T_EOPEN;
+        raise(T_EOPEN, "proc_write_byte - error opening %s", memory_path);
         return;
     }
     TRACE("Opening process file success");
 
     if (lseek(fd, address, SEEK_SET) == -1) {
-        t_errno = T_EWRITE;
+        raise(T_EWRITE, "proc_write_byte - error seeking %s to %#lx", memory_path, address);
         return;
     }
 
     if (write(fd, &value, sizeof(value)) == -1) {
-        t_errno = T_EWRITE;
+        raise(T_EWRITE, "proc_write_byte - error writing to %s at %#lx", memory_path, address);
         return;
     }
 
     if (close(fd) == -1) {
-        t_errno = T_ECLOSE;
+        raise(T_ECLOSE, "proc_write_byte - error closing %s", memory_path);
     }
     TRACE("Successfully written %#x to %d at %#lx", value, pid, address);
 }
@@ -128,23 +128,23 @@ extern void proc_write_word(pid_t const pid, intptr_t const address, intptr_t co
 
     int const fd = open(memory_path, O_WRONLY);
     if (fd == -1) {
-        t_errno = T_EOPEN;
+        raise(T_EOPEN, "proc_write_word - error opening %s", memory_path);
         return;
     }
     TRACE("Opening process file success");
 
     if (lseek(fd, address, SEEK_SET) == -1) {
-        t_errno = T_EWRITE;
+        raise(T_EWRITE, "proc_write_word - error seeking %s to %#lx", memory_path, address);
         return;
     }
 
     if (write(fd, &word, sizeof(word)) == -1) {
-        t_errno = T_EWRITE;
+        raise(T_EWRITE, "proc_write_word - error writing to %s at %#lx", memory_path, address);
         return;
     }
 
     if (close(fd) == -1) {
-        t_errno = T_ECLOSE;
+        raise(T_ECLOSE, "proc_write_word - error closing %s", memory_path);
     }
     TRACE("Successfully written %#x to %d at %#lx", word, pid, address);
 }
@@ -154,8 +154,8 @@ static void construct_memory_path(char memory_path[const static MEMORY_PATH_MAX]
     int const copied_characters = snprintf(memory_path, MEMORY_PATH_MAX, MEMORY_PATH_FORMAT, pid);
 
     if (copied_characters < 0) {
-        t_errno = T_EENCODING;
+        raise(T_EENCODING, "construct_memory_path");
     } else if (copied_characters > (MEMORY_PATH_MAX-1)) {
-        t_errno = T_ESTR_TRUNC;
+        raise(T_ESTR_TRUNC, "construct_memory_path");
     }
 }

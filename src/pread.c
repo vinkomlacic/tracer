@@ -38,16 +38,17 @@ extern int pread_int(char const command[const]) {
 extern void pread_raw_line(const char command[const], char output[static BUFFER_LENGTH]) {
     FILE *pipe = popen(command, "r");
     if (pipe == NULL) {
-        t_errno = T_EPOPEN;
+        raise(T_EPOPEN, "pread_raw_line");
+        return;
     }
 
     if (fgets(output, BUFFER_LENGTH, pipe) == NULL) {
-        t_errno = T_EFGETS;
+        raise(T_EFGETS, "pread_raw_line");
         return;
     }
 
     if (pclose(pipe) == -1) {
-        t_errno = T_EPCLOSE;
+        raise(T_EPCLOSE, "pread_raw_line");
     }
 }
 
@@ -65,7 +66,7 @@ static void pread_item(char const command[const], char const format[const], ...)
     // Warning is disabled because the format is checked when passed to this function
     if (sscanf(buffer, format, va_arg(arguments, void const *)) != 1) {
 #pragma GCC diagnostic pop
-        t_errno = T_EPREAD;
+        raise(T_EPREAD, "pread_item");
         return;
     }
     va_end(arguments);

@@ -26,7 +26,7 @@ extern intptr_t get_symbol_address_in_target(pid_t const pid, char const symbol[
 
     intptr_t const offset = get_symbol_offset(pid, symbol);
     if (offset == 0) {
-        t_errno = T_ESYMBOL_NOT_FOUND;
+        raise(T_ESYMBOL_NOT_FOUND, "get_symbol_address_in_target - symbol: %s", symbol);
         return 0;
     }
     DEBUG("offset: %#x", offset);
@@ -45,7 +45,7 @@ extern intptr_t get_symbol_address_in_libc(pid_t const pid, const char *symbol) 
 
     intptr_t const offset = get_symbol_offset_in_lib(lib_path, symbol);
     if (offset == 0) {
-        t_errno = T_ESYMBOL_NOT_FOUND;
+        raise(T_ESYMBOL_NOT_FOUND, "get_symbol_address_in_libc - symbol: %s", symbol);
         return 0;
     }
     DEBUG("offset: %#x", offset);
@@ -64,7 +64,7 @@ extern intptr_t get_mprotect_address(pid_t const pid) {
 
     intptr_t const offset = get_mprotect_offset(lib_path);
     if (offset == 0) {
-        t_errno = T_ESYMBOL_NOT_FOUND;
+        raise(T_ESYMBOL_NOT_FOUND, "get_mprotect_address - symbol: mprotect");
         return 0;
     }
     DEBUG("offset: %#x", offset);
@@ -87,7 +87,7 @@ extern size_t get_function_code(pid_t const pid, intptr_t const start_address, u
             break;
         }
         if ((i + 1) == MAX_CODE_LENGTH) {
-            t_errno = T_EFUNC_TOO_BIG;
+            raise(T_EFUNC_TOO_BIG, "get_function_code - function at %#lx", start_address);
             return 0;
         }
     }
@@ -103,10 +103,15 @@ extern pid_t get_pid(char const process_name[const]) {
     DEBUG("Getting PID => pgrep %s", process_name);
     int printed_characters = snprintf(command, PATH_MAX, "pgrep %s", process_name);
     if (printed_characters < 0) {
-      t_errno = T_EPRINTF;
+        raise(T_EPRINTF, "get_pid");
     }
 
-    return pread_int(command);
+    pid_t pid =  pread_int(command);
+    if (error_occurred()) {
+        raise(T_EPROC_NOT_RUNNING, "get_pid - %s not running", process_name);
+    }
+
+    return pid;
 }
 
 
@@ -115,7 +120,7 @@ static intptr_t get_symbol_offset(pid_t const pid, char const symbol[const]) {
 
     int const printed_characters = snprintf(command, PATH_MAX, "nm `cat /proc/%d/comm` | grep %s", pid, symbol);
     if (printed_characters < 0) {
-        t_errno = T_EPRINTF;
+        raise(T_EPRINTF, "get_symbol_offset");
         return 0;
     }
     DEBUG("Getting symbol offset => %s", command);
@@ -130,7 +135,7 @@ static intptr_t get_symbol_offset_in_lib(char const lib_path[const], char const 
     DEBUG("Getting symbol offset => objdump -d %s | grep -e \"<.*%s.*>:\"", lib_path, symbol);
     int const printed_characters = snprintf(command, PATH_MAX, "objdump -d %s | grep -e \"<.*%s.*>:\"", lib_path, symbol);
     if (printed_characters < 0) {
-        t_errno = T_EPRINTF;
+        raise(T_EPRINTF, "get_symbol_offset_in_lib");
         return 0;
     }
 
@@ -149,7 +154,7 @@ static intptr_t get_mprotect_offset(char const lib_path[const]) {
             lib_path
     );
     if (printed_characters < 0) {
-        t_errno = T_EPRINTF;
+        raise(T_EPRINTF, "get_mprotect_offset");
         return 0;
     }
 
@@ -162,7 +167,7 @@ static intptr_t get_libc_base_address(pid_t const pid) {
 
     int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*%s", pid, LIBC_NAME);
     if (printed_characters < 0) {
-        t_errno = T_EPRINTF;
+        raise(T_EPRINTF, "get_libc_base_address");
         return 0;
     }
     DEBUG("Getting libc base address => %s", command);
@@ -176,7 +181,7 @@ static intptr_t get_process_base_address(pid_t const pid) {
 
     int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*`pgrep -n %d`", pid, pid);
     if (printed_characters < 0) {
-        t_errno = T_EPRINTF;
+        raise(T_EPRINTF, "get_process_base_address");
         return 0;
     }
     DEBUG("Getting process base address => %s", command);
@@ -190,7 +195,7 @@ static void get_libc_path(pid_t const pid, char path[const]) {
 
     int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep -o -e \"/.*%s.*$\"", pid, LIBC_NAME);
     if (printed_characters < 0) {
-        t_errno = T_EPRINTF;
+        raise(T_EPRINTF, "get_libc_path");
         return;
     }
     DEBUG("Getting libc path => %s", command);
