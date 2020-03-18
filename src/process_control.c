@@ -21,14 +21,14 @@ static void inject_code(pstate_t *pstate, unsigned code_size, uint8_t const code
 
 extern void pattach(pid_t const pid) {
     if (ptrace(PTRACE_ATTACH, pid, 0, 0) == -1) {
-        raise(T_EPTRACE, "pattach");
+        raise(T_EPTRACE, "attaching %d", pid);
         return;
     }
 
 
     DEBUG("PTRACE_ATTACH executed. Waiting for stop signal.");
     if (waitpid(pid, NULL, WSTOPPED) == -1) {
-        raise(T_EWAIT, "pattach");
+        raise(T_EWAIT, "%d", pid);
     }
     DEBUG("Tracee process stopped. Tracee is attached.");
 }
@@ -37,7 +37,7 @@ extern void pattach(pid_t const pid) {
 extern void pcontinue(pid_t const pid) {
     DEBUG("rip: %#llx", get_regs(pid).rip);
     if (ptrace(PTRACE_CONT, pid, 0, SIGCONT) == -1) {
-        raise(T_EPTRACE, "pcontinue");
+        raise(T_EPTRACE, "sending SIGCONT to %d", pid);
     }
     DEBUG("SIGCONT sent");
 }
@@ -54,7 +54,7 @@ extern void set_breakpoint(intptr_t const address, pstate_t * const pstate) {
 extern void wait_for_bp(pid_t const pid) {
     DEBUG("Waiting for breakpoint");
     if (waitpid(pid, NULL, 0) == -1) {
-        raise(T_EWAIT, "wait_for_bp");
+        raise(T_EWAIT, "%d", pid);
     }
     DEBUG("Breakpoint caught or process died");
 }
@@ -107,7 +107,7 @@ extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int
     if (error_occurred()) return -1;
 
 #ifdef DEBUG_ENABLE
-        uint8_t bytes[4] = {0};
+    uint8_t bytes[4] = {0};
     for (int i = 0; i < 4; i++) {
         bytes[i] = proc_read_byte(pstate->pid, pstate->change_address + i);
     }
@@ -182,7 +182,7 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
     regs.rdx = (unsigned long long int) size;
 
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
-        raise(T_EPTRACE, "call_posix_memalign");
+        raise(T_EPTRACE, "setting regs");
         return 0;
     }
 
@@ -213,7 +213,7 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
     struct user_regs_struct regs_after_call = get_regs(pstate->pid);
     if (regs_after_call.rax != 0) {
         // TODO place more detailed error
-        raise(T_ERROR, "call_posix_memalign");
+        raise(T_ERROR, "function call unsuccessful (returned %#llx)", regs.rax);
         DEBUG("Function returned %d", regs_after_call.rax);
         return -1;
     }
@@ -227,7 +227,7 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
     DEBUG("Restoring stack");
     regs_after_call.rsp += 8ULL;
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs_after_call) == -1) {
-        raise(T_EPTRACE, "call_posix_memalign");
+        raise(T_EPTRACE, "setting regs");
         return -1;
     }
 
@@ -252,7 +252,7 @@ extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address,
     regs.rdx = (unsigned long long int) prot;
 
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
-        raise(T_EPTRACE, "call_mprotect");
+        raise(T_EPTRACE, "setting regs");
         return;
     }
 
@@ -281,9 +281,11 @@ extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address,
     if (error_occurred()) return;
 
     DEBUG("Return value = %d", get_regs(pstate->pid).rax);
-    if (get_regs(pstate->pid).rax != 0) {
-        // t_errno = T_ERROR;
-        // return;
+    regs = get_regs(pstate->pid);
+    if (regs.rax != 0) {
+        // TODO put detailed error code
+        raise(T_ERROR, "calling mprotect failed (returned %#llx)", regs.rax);
+        return;
     }
     DEBUG("mprotect returned successfully");
 }
@@ -302,7 +304,7 @@ extern void call_free(pstate_t * const pstate, intptr_t const address) {
     regs.rdi = (unsigned long long int) address;
 
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
-        raise(T_EPTRACE, "call_free");
+        raise(T_EPTRACE, "setting regs");
         return;
     }
 
@@ -335,7 +337,7 @@ extern void call_free(pstate_t * const pstate, intptr_t const address) {
 extern void pdetach(pid_t const pid) {
     DEBUG("rip: %#llx", get_regs(pid).rip);
     if (ptrace(PTRACE_DETACH, pid, 0, 0) == -1) {
-        raise(T_EPTRACE, "pdetach");
+        raise(T_EPTRACE, "detaching %d", pid);
     }
     DEBUG("Process %d detached", pid);
 }
@@ -354,7 +356,7 @@ static void inject_indirect_call_at(
     regs.rax = (unsigned long long int) function_address;
     regs.rdi = (unsigned long long int) arg;
     if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &regs) == -1) {
-        raise(T_EPTRACE, "inject_indirect_call_at");
+        raise(T_EPTRACE, "setting regs");
         return;
     }
 
@@ -405,9 +407,9 @@ extern void inject_trampoline(pid_t const pid, intptr_t const function_address, 
     DEBUG("Injected trampoline to %#lx at %#lx", function_address, address);
 #ifdef DEBUG_ENABLE
     DEBUG("Looking up injected code in tracee to verify");
-        for (size_t i = 0; i < 13; i++) {
-            DEBUG("<%#lx>: %#x", address + i, proc_read_byte(pid, address + i));
-        }
+    for (size_t i = 0; i < 13; i++) {
+        DEBUG("<%#lx>: %#x", address + i, proc_read_byte(pid, address + i));
+    }
 #endif
 }
 

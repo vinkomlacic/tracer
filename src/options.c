@@ -24,7 +24,7 @@ extern options_t parse_options(int const argc, char const * const argv[const]) {
             case '?':
                 WARN("Option '-%c' is an unknown option or it requires an argument which was not provided", optopt);
                 if (optopt == 't' || optopt == 's' || optopt == 'c') {
-                    raise(T_ECLI_EMPTY, "");
+                    raise(T_ECLI_EMPTY, "%c", optopt);
                 }
                 return options;
 
