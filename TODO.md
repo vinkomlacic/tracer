@@ -1,6 +1,6 @@
 # TODO
 
-## 1. process_info
+## ~~1. process_info~~
 ### ~~Get rid of dependency on the target name~~
 *   Work it out so everything works with PID.
     Piping to pgrep is expensive and that's what happens every time you call `get_pid(pid_t)`.
@@ -9,7 +9,7 @@
 *   `get_function_code`: make a specific error when the function is too big (`> MAX_CODE_LEN`).
 
 ### ~~Refactor into smaller functions~~
-*   The module need refactoring
+*   The module needs refactoring
 
 ## 2. t_error
 ### ~~Contextual error reporting~~
@@ -56,6 +56,9 @@
 ### Fix putting functions in macros
 *   If a function that uses logs is put into the log (e.g. `DEBUG(get_pid("tracee"))`) the output
     will be messed up a bit because the DEBUG tag will be around the lower level output of the logging.
+### Cleanup logs
+*   Clear unnecessary logging outputs
+*   Clearly define what should be put on each log level and enforce (note: TRACE level is not used much)
     
 ## 7. Warnings
 ### Clean up warnings
@@ -63,17 +66,16 @@
     Either correct them or suppress if they are actually a false positive.
 *   This should be done on both Clang and GCC compilers to cover more cases.
 
-
-## 8. Run dynamic analysis
-### ASAN
-### MSAN (Clang only)
-### UbSAN  
-
-## 9. Testing
-### Test cases
-*   Test cases should be written in a separate document.
-### Test lib
+## 8. Testing
+*   Write test cases in a separate document.
 *   Test support is needed so choose a library for this.
-### Write tests according to the test case file
-*   After this write the test case in C code. 
+*   After this write the test cases in C code.
+
+## 9. Run dynamic analysis
+*   ASAN
+*   MSAN (Clang only)
+*   UbSAN
  
+## 10. Documentation
+*   Write API instructions and add comments to clarify actions where necessary
+*   Create the report for 
