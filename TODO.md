@@ -8,6 +8,9 @@
 ### ~~Add a specific error~~
 *   `get_function_code`: make a specific error when the function is too big (`> MAX_CODE_LEN`).
 
+### Refactor into smaller functions
+*   The module need refactoring
+
 ## 2. t_error
 ### ~~Contextual error reporting~~
 *   Add support for context reporting in error messages. Currently, what happens is that
