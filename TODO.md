@@ -8,7 +8,7 @@
 ### ~~Add a specific error~~
 *   `get_function_code`: make a specific error when the function is too big (`> MAX_CODE_LEN`).
 
-### Refactor into smaller functions
+### ~~Refactor into smaller functions~~
 *   The module need refactoring
 
 ## 2. t_error

@@ -15,7 +15,7 @@
 static intptr_t get_symbol_offset(pid_t pid, char const symbol[]);
 static intptr_t get_symbol_offset_in_lib(char const lib_path[], char const symbol[]);
 static intptr_t get_mprotect_offset(char const lib_path[]);
-static intptr_t get_libc_base_address(pid_t pid);
+static intptr_t locate_libc_in(pid_t pid);
 static intptr_t get_process_base_address(pid_t pid);
 static void get_libc_path(pid_t pid, char path[]);
 
@@ -35,8 +35,36 @@ extern intptr_t get_symbol_address_in_target(pid_t const pid, char const symbol[
 }
 
 
+static intptr_t get_process_base_address(pid_t const pid) {
+    char command[PATH_MAX] = {0};
+
+    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*`pgrep -n %d`", pid, pid);
+    if (printed_characters < 0) {
+        raise(T_EPRINTF, "snprintf failed");
+        return 0;
+    }
+    DEBUG("Getting process base address => %s", command);
+
+    return pread_word(command);
+}
+
+
+static intptr_t get_symbol_offset(pid_t const pid, char const symbol[const]) {
+    char command[PATH_MAX] = {0};
+
+    int const printed_characters = snprintf(command, PATH_MAX, "nm `cat /proc/%d/comm` | grep %s", pid, symbol);
+    if (printed_characters < 0) {
+        raise(T_EPRINTF, "snprintf failed");
+        return 0;
+    }
+    DEBUG("Getting symbol offset => %s", command);
+
+    return pread_word(command);
+}
+
+
 extern intptr_t get_symbol_address_in_libc(pid_t const pid, const char *symbol) {
-    intptr_t const base_address = get_libc_base_address(pid);
+    intptr_t const base_address = locate_libc_in(pid);
     DEBUG("base_address: %#lx", base_address);
 
     char lib_path[PATH_MAX] = {0};
@@ -54,8 +82,51 @@ extern intptr_t get_symbol_address_in_libc(pid_t const pid, const char *symbol) 
 }
 
 
+static intptr_t locate_libc_in(pid_t const pid) {
+    char command[PATH_MAX] = {0};
+
+    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*%s", pid, LIBC_NAME);
+    if (printed_characters < 0) {
+        raise(T_EPRINTF, "snprintf failed");
+        return 0;
+    }
+    DEBUG("Getting libc base address => %s", command);
+
+    return pread_word(command);
+}
+
+
+static void get_libc_path(pid_t const pid, char path[const]) {
+    char command[PATH_MAX] = {0};
+
+    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep -o -e \"/.*%s.*$\"", pid, LIBC_NAME);
+    if (printed_characters < 0) {
+        raise(T_EPRINTF, "snprintf failed");
+        return;
+    }
+    DEBUG("Getting libc path => %s", command);
+
+    pread_raw_line(command, path);
+    path[strlen(path) - 1] = '\0'; // deletes the newline at the end
+}
+
+
+static intptr_t get_symbol_offset_in_lib(char const lib_path[const], char const symbol[const]) {
+    char command[PATH_MAX] = {0};
+
+    int const printed_characters = snprintf(command, PATH_MAX, "objdump -d %s | grep -e \"<.*%s.*>:\"", lib_path, symbol);
+    if (printed_characters < 0) {
+        raise(T_EPRINTF, "snprintf failed");
+        return 0;
+    }
+    DEBUG("Getting symbol offset => %s", command);
+
+    return pread_word(command);
+}
+
+
 extern intptr_t get_mprotect_address(pid_t const pid) {
-    intptr_t const base_address = get_libc_base_address(pid);
+    intptr_t const base_address = locate_libc_in(pid);
     DEBUG("base_address: %#lx", base_address);
 
     char lib_path[PATH_MAX] = {0};
@@ -70,6 +141,25 @@ extern intptr_t get_mprotect_address(pid_t const pid) {
     DEBUG("offset: %#x", offset);
 
     return base_address + offset;
+}
+
+
+static intptr_t get_mprotect_offset(char const lib_path[const]) {
+    char command[PATH_MAX] = {0};
+
+    int const printed_characters = snprintf(
+            command,
+            PATH_MAX,
+            "objdump -d %s | grep -e \"<.*mprotect.*>:\" | grep -v -e \"<.*pkey_mprotect.*>:\" ",
+            lib_path
+    );
+    if (printed_characters < 0) {
+        raise(T_EPRINTF, "snprintf failed");
+        return 0;
+    }
+    DEBUG("Getting symbol offset => %s", command);
+
+    return pread_word(command);
 }
 
 
@@ -112,94 +202,4 @@ extern pid_t get_pid(char const process_name[const]) {
     }
 
     return pid;
-}
-
-
-static intptr_t get_symbol_offset(pid_t const pid, char const symbol[const]) {
-    char command[PATH_MAX] = {0};
-
-    int const printed_characters = snprintf(command, PATH_MAX, "nm `cat /proc/%d/comm` | grep %s", pid, symbol);
-    if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
-        return 0;
-    }
-    DEBUG("Getting symbol offset => %s", command);
-
-    return pread_word(command);
-}
-
-
-static intptr_t get_symbol_offset_in_lib(char const lib_path[const], char const symbol[const]) {
-    char command[PATH_MAX] = {0};
-
-    DEBUG("Getting symbol offset => objdump -d %s | grep -e \"<.*%s.*>:\"", lib_path, symbol);
-    int const printed_characters = snprintf(command, PATH_MAX, "objdump -d %s | grep -e \"<.*%s.*>:\"", lib_path, symbol);
-    if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
-        return 0;
-    }
-
-    return pread_word(command);
-}
-
-
-static intptr_t get_mprotect_offset(char const lib_path[const]) {
-    char command[PATH_MAX] = {0};
-
-    DEBUG("Getting symbol offset => objdump -d %s | grep -e \"<.*mprotect.*>:\" | grep -v -e \"<.*pkey_mprotect.*>:\"", lib_path);
-    int const printed_characters = snprintf(
-            command,
-            PATH_MAX,
-            "objdump -d %s | grep -e \"<.*mprotect.*>:\" | grep -v -e \"<.*pkey_mprotect.*>:\" ",
-            lib_path
-    );
-    if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
-        return 0;
-    }
-
-    return pread_word(command);
-}
-
-
-static intptr_t get_libc_base_address(pid_t const pid) {
-    char command[PATH_MAX] = {0};
-
-    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*%s", pid, LIBC_NAME);
-    if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
-        return 0;
-    }
-    DEBUG("Getting libc base address => %s", command);
-
-    return pread_word(command);
-}
-
-
-static intptr_t get_process_base_address(pid_t const pid) {
-    char command[PATH_MAX] = {0};
-
-    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*`pgrep -n %d`", pid, pid);
-    if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
-        return 0;
-    }
-    DEBUG("Getting process base address => %s", command);
-
-    return pread_word(command);
-}
-
-
-static void get_libc_path(pid_t const pid, char path[const]) {
-    char command[PATH_MAX] = {0};
-
-    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep -o -e \"/.*%s.*$\"", pid, LIBC_NAME);
-    if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
-        return;
-    }
-    DEBUG("Getting libc path => %s", command);
-
-    pread_raw_line(command, path);
-    path[strlen(path) - 1] = '\0'; // deletes the newline at the end
 }
