@@ -5,6 +5,7 @@
 #include "t_error.h"
 #include "procmem.h"
 #include "process_info.h"
+#include "ptrace_wrapper.h"
 
 #include "pstate.h"
 
@@ -34,6 +35,23 @@ extern void save_process_regs(pstate_t *pstate) {
 }
 
 
+extern void save_process_code(pstate_t * const pstate, intptr_t const start_address, size_t const code_size) {
+    if (pstate == NULL) {
+        raise(T_ENULL_ARG, "pstate is null");
+        return;
+    }
+
+    if (pstate->changed_code_len == 0) pstate->change_address = start_address;
+
+    DEBUG("Saving process code");
+    for (size_t i = 0; i < code_size; i++) {
+        pstate->changed_code[pstate->changed_code_len] = proc_read_byte(pstate->pid, start_address + i);
+        pstate->changed_code_len++;
+        if (error_occurred()) return;
+    }
+}
+
+
 extern void revert_to(pstate_t const * const pstate) {
     if (pstate == NULL) {
         raise(T_ENULL_ARG, "pstate arg is null");
@@ -58,14 +76,6 @@ extern void revert_to(pstate_t const * const pstate) {
 }
 
 
-extern void append_code_to_pstate(pstate_t * const pstate, uint8_t const code) {
-    if (pstate != NULL) {
-        pstate->changed_code[pstate->changed_code_len] = code;
-        pstate->changed_code_len++;
-    }
-}
-
-
 extern intptr_t get_address_after_changes(pstate_t const * const pstate) {
     if (pstate == NULL) {
         raise(T_ENULL_ARG, "pstate arg is null");
@@ -83,14 +93,4 @@ extern bool has_changes(pstate_t const * const pstate) {
     }
 
     return ((pstate->changed_code_len) == 0) ? false : true;
-}
-
-
-extern struct user_regs_struct get_regs(pid_t const pid) {
-    struct user_regs_struct regs;
-    if (ptrace(PTRACE_GETREGS, pid, NULL, &regs) == -1) {
-        raise(T_EPTRACE, "getting regs failed");
-    }
-
-    return regs;
 }

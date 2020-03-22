@@ -10,7 +10,7 @@
 typedef struct ERROR {
     unsigned line;
     t_errno_t code;
-    char *filename;
+    char *filename; // TODO add const here
     char message[MAX_MESSAGE_SIZE];
 } t_error_t;
 

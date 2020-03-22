@@ -4,6 +4,7 @@
 
 #include "process_control.h"
 #include "process_info.h"
+#include "ptrace_wrapper.h"
 #include "t_error.h"
 #include "pstate.h"
 #include "options.h"
@@ -40,7 +41,7 @@ int main(int const argc, char const * const argv[const]) {
     INFO("Target \"%s\" attached. Target process stopped.", target);
 
     INFO("Changing process memory at %#lx", entry_function);
-    set_breakpoint(entry_function, &pstate);
+    inject_breakpoint(&pstate, entry_function);
     check_for_error();
     INFO("Breakpoint injected at %#lx <%s>", pstate.change_address, symbol);
 
@@ -49,7 +50,7 @@ int main(int const argc, char const * const argv[const]) {
     check_for_error();
 
     INFO("Waiting for code to get to the breakpoint");
-    wait_for_bp(pstate.pid);
+    wait_for_breakpoint(pstate.pid);
     check_for_error();
     INFO("Target process stopped. Target process at entry function. Saving registers");
     save_process_regs(&pstate);
@@ -69,9 +70,8 @@ int main(int const argc, char const * const argv[const]) {
     check_for_error();
     INFO("called mprotect(%#lx, %d, %d)", memory_address, getpagesize(), PROT_EXEC | PROT_WRITE | PROT_EXEC);
 
-    size_t injected_code = inject_virus(pstate.pid, memory_address, code_size, code);
+    inject_code_to_process(pstate.pid, memory_address, code_size, code);
     check_for_error();
-    INFO("Injected %d bytes of the virus", injected_code);
 
     if (options.clean) {
         int arg = 5;

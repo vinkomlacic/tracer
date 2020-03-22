@@ -18,21 +18,15 @@ extern pstate_t create_pstate(void);
 extern void save_process_regs(pstate_t *pstate);
 
 
+extern void save_process_code(pstate_t *pstate, intptr_t start_address, size_t code_size);
+
+
 /**
  * Restore the process to the state specified in the argument.
  * This changes process registers and restores possible code changes (e.g. setting breakpoints or
  * other code injections).
  */
 extern void revert_to(pstate_t const *pstate);
-
-
-/**
- * Adds code to changed code array in pstate_t struct.
- * Accordingly updates changed code length in the struct.
- *
- * This is the preferred way of updating code in the struct.
- */
-extern void append_code_to_pstate(pstate_t *pstate, uint8_t code);
 
 
 /**
@@ -51,9 +45,3 @@ extern intptr_t get_address_after_changes(pstate_t const * pstate);
  * Precondition: pstate must not be null.
  */
 extern bool has_changes(pstate_t const * pstate);
-
-
-/**
- * Returns the registers from the currently running process.
- */
-extern struct user_regs_struct get_regs(pid_t pid);
