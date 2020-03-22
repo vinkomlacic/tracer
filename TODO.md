@@ -22,10 +22,12 @@
     (returns the error message for a certain error code).
 
 ## 3. process_control
-### General refactoring
+### ~~General refactoring~~
 *   This module needs complete refactoring and maybe needs to be separated into two or three
     modules (ptrace wrapper and an API for calling functions
     (e.g JAVA function interfaces like runnable, consumer, producer, function)).
+    **comment**: an interface for function calling like this turned out to be an overkill and a complication
+    to implement so it's discarded
  
 ### Validation
 *   Validation of pstate is important before calling functions.

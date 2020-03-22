@@ -106,6 +106,61 @@ extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int
 }
 
 
+/**
+ * Supports up to 6 arguments. More than 6 arguments means they have to be put on the stack.
+ * This could be put in another function if needed.
+ */
+static void set_arguments(pid_t const pid, size_t const argc, unsigned long long const argv[const static 1]) {
+    struct user_regs_struct regs = get_regs(pid);
+    if (error_occurred()) return;
+    if (argc > 6 || argc == 0) {
+        // TODO add detailed error code
+        raise(T_ERROR, "argc not in [1, 6]: %lu", argc);
+    }
+
+    unsigned long long int * const arg_regs[] = {&regs.rdi, &regs.rsi, &regs.rdx, &regs.rcx, &regs.r8, &regs.r9};
+    for (size_t i = 0; i < argc; i++) {
+        *arg_regs[i] = argv[i];
+    }
+
+    set_regs(pid, &regs);
+}
+
+
+static void inject_indirect_call_at(pstate_t * const pstate, intptr_t const address, intptr_t const function_address) {
+    DEBUG("Setting up indirect call %%rax = %#lx", function_address);
+    struct user_regs_struct regs = get_regs(pstate->pid);
+    if (error_occurred()) return;
+
+    regs.rax = (unsigned long long int) function_address;
+
+    set_regs(pstate->pid, &regs);
+    if (error_occurred()) return;
+
+    DEBUG("Injecting indirect call to the process memory");
+    uint8_t const indirect_call[] = {0xFF, 0xD0, 0xCC};
+    save_process_code(pstate, address, sizeof(indirect_call));
+    inject_code_to_process(pstate->pid, address, sizeof(indirect_call), indirect_call);
+}
+
+
+static void execute_injections(pid_t const pid) {
+    DEBUG("Executing injected code");
+    pcontinue(pid);
+    if (error_occurred()) return;
+
+    wait_for_breakpoint(pid);
+}
+
+
+static unsigned long long get_return_value(pid_t const pid) {
+    struct user_regs_struct regs = get_regs(pid);
+    if (error_occurred()) return 0;
+
+    return regs.rax;
+}
+
+
 extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignment, size_t const size) {
     intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, "posix_memalign");
     if (function_address == 0L && error_occurred()) return -1;
@@ -148,6 +203,29 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
     deallocate_stack_variable(pstate->pid);
 
     return ret_value;
+}
+
+
+static intptr_t allocate_stack_variable(pid_t const pid) {
+    struct user_regs_struct regs = get_regs(pid);
+    if (error_occurred()) return -1;
+
+    regs.rsp -= 8ULL;
+
+    set_regs(pid, &regs);
+    if (error_occurred()) return -1;
+
+    return regs.rsp;
+}
+
+
+static void deallocate_stack_variable(pid_t const pid) {
+    struct user_regs_struct regs = get_regs(pid);
+    if (error_occurred()) return;
+
+    regs.rsp += 8ULL;
+
+    set_regs(pid, &regs);
 }
 
 
@@ -219,82 +297,4 @@ extern void scrub_virus(pid_t const pid, intptr_t const start_address, size_t co
         proc_write_byte(pid, address, 0x00);
         if (error_occurred()) return;
     }
-}
-
-
-static void inject_indirect_call_at(pstate_t * const pstate, intptr_t const address, intptr_t const function_address) {
-    DEBUG("Setting up indirect call %%rax = %#lx", function_address);
-    struct user_regs_struct regs = get_regs(pstate->pid);
-    if (error_occurred()) return;
-
-    regs.rax = (unsigned long long int) function_address;
-
-    set_regs(pstate->pid, &regs);
-    if (error_occurred()) return;
-
-    DEBUG("Injecting indirect call to the process memory");
-    uint8_t const indirect_call[] = {0xFF, 0xD0, 0xCC};
-    save_process_code(pstate, address, sizeof(indirect_call));
-    inject_code_to_process(pstate->pid, address, sizeof(indirect_call), indirect_call);
-}
-
-
-/**
- * Supports up to 6 arguments. More than 6 arguments means they have to be put on the stack.
- * This could be put in another function if needed.
- */
-static void set_arguments(pid_t const pid, size_t const argc, unsigned long long const argv[const static 1]) {
-    struct user_regs_struct regs = get_regs(pid);
-    if (error_occurred()) return;
-    if (argc > 6 || argc == 0) {
-        // TODO add detailed error code
-        raise(T_ERROR, "argc not in [1, 6]: %lu", argc);
-    }
-
-    unsigned long long int * const arg_regs[] = {&regs.rdi, &regs.rsi, &regs.rdx, &regs.rcx, &regs.r8, &regs.r9};
-    for (size_t i = 0; i < argc; i++) {
-        *arg_regs[i] = argv[i];
-    }
-
-    set_regs(pid, &regs);
-}
-
-
-static unsigned long long get_return_value(pid_t const pid) {
-    struct user_regs_struct regs = get_regs(pid);
-    if (error_occurred()) return 0;
-
-    return regs.rax;
-}
-
-
-static void execute_injections(pid_t const pid) {
-    DEBUG("Executing injected code");
-    pcontinue(pid);
-    if (error_occurred()) return;
-
-    wait_for_breakpoint(pid);
-}
-
-
-static intptr_t allocate_stack_variable(pid_t const pid) {
-    struct user_regs_struct regs = get_regs(pid);
-    if (error_occurred()) return -1;
-
-    regs.rsp -= 8ULL;
-
-    set_regs(pid, &regs);
-    if (error_occurred()) return -1;
-
-    return regs.rsp;
-}
-
-
-static void deallocate_stack_variable(pid_t const pid) {
-    struct user_regs_struct regs = get_regs(pid);
-    if (error_occurred()) return;
-
-    regs.rsp += 8ULL;
-
-    set_regs(pid, &regs);
 }
