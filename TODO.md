@@ -66,7 +66,7 @@
     Either correct them or suppress if they are actually a false positive.
 *   This should be done on both Clang and GCC compilers to cover more cases.
 
-## 8. Testing
+## 8. Testing (low priority)
 *   Write test cases in a separate document.
 *   Test support is needed so choose a library for this.
 *   After this write the test cases in C code.
@@ -79,3 +79,32 @@
 ## 10. Documentation
 *   Write API instructions and add comments to clarify actions where necessary
 *   Create the report for 
+
+## 11. options
+*   Adapt options to be more versatile, some things are hardcoded currently.
+
+## 12. tracer
+### Divide program into parts
+As it is now the program inspects the binary and the process memory several times unnecessarily.
+This could be optimize if the program flow is organized a bit better.
+Proposed organization is placed below.
+#### Part 0 (if time allows): Scanning for prerequisite tools
+*   nm
+*   objdump
+*   cat
+*   grep  
+#### Part I: Scanning the CLI options
+#### Part II: Inspecting the target binary
+#### Part III: Hooking up to the running process
+#### Part IV: Inspecting the target process and shared libraries
+#### Part V: Injecting virus
+#### Part VI.a: Cleanup option
+*   Executes the virus
+*   Scrubs the virus from memory
+*   Reverts the memory permissions as they were before (heap permissions)
+*   Frees the allocated memory for the virus
+#### Part VI.b: Virus injection option
+*   Creates a trampoline in the entry function which calls the virus instead of the function
+    each time the function is called
+#### Part VII: Reverting the process to a state of execution where it was before the tracer attached
+#### Part VIII: Releasing the traced process
