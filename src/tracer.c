@@ -3,6 +3,7 @@
 #include <sys/mman.h>
 
 #include "process_control.h"
+#include "inject_code.h"
 #include "process_info.h"
 #include "ptrace_wrapper.h"
 #include "t_error.h"
@@ -70,7 +71,7 @@ int main(int const argc, char const * const argv[const]) {
     check_for_error();
     INFO("called mprotect(%#lx, %d, %d)", memory_address, getpagesize(), PROT_EXEC | PROT_WRITE | PROT_EXEC);
 
-    inject_code_to_process(pstate.pid, memory_address, code_size, code);
+    inject_raw_code_to_process(pstate.pid, memory_address, code_size, code);
     check_for_error();
 
     if (options.clean) {

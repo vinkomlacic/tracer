@@ -26,9 +26,6 @@ extern intptr_t get_symbol_address_in_target(pid_t pid, char const symbol[]);
 extern intptr_t get_symbol_address_in_libc(pid_t pid, const char *symbol);
 
 
-extern intptr_t get_mprotect_address(pid_t pid);
-
-
 extern size_t get_function_code(pid_t pid, intptr_t start_address, uint8_t code_output[]);
 
 
