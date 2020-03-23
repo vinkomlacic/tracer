@@ -37,11 +37,3 @@ extern void revert_to(pstate_t const *pstate);
  * Precondition: pstate must not be null.
  */
 extern intptr_t get_address_after_changes(pstate_t const * pstate);
-
-
-/**
- * Returns true if the pstate struct has stored any changes so far.
- *
- * Precondition: pstate must not be null.
- */
-extern bool has_changes(pstate_t const * pstate);

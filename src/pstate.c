@@ -84,13 +84,3 @@ extern intptr_t get_address_after_changes(pstate_t const * const pstate) {
 
     return pstate->change_address + pstate->changed_code_len;
 }
-
-
-extern bool has_changes(pstate_t const * const pstate) {
-    if (pstate == NULL) {
-        raise(T_ENULL_ARG, "pstate arg is null");
-        return true;
-    }
-
-    return ((pstate->changed_code_len) == 0) ? false : true;
-}
