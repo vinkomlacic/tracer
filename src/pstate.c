@@ -1,4 +1,3 @@
-#include <sys/ptrace.h>
 #include <string.h>
 
 #include "log.h"
@@ -61,16 +60,12 @@ extern void revert_to(pstate_t const * const pstate) {
     DEBUG("Restoring instructions in code");
     for (size_t i = 0; i < pstate->changed_code_len; i++) {
         proc_write_byte(pstate->pid, pstate->change_address + i, pstate->changed_code[i]);
-        if (error_occurred()) {
-            return;
-        }
+        if (error_occurred()) return;
     }
 
     DEBUG("Restoring old registers");
-    if (ptrace(PTRACE_SETREGS, pstate->pid, NULL, &(pstate->changed_regs)) == -1) {
-        raise(T_EPTRACE, "setting regs");
-        return;
-    }
+    set_regs(pstate->pid, (struct user_regs_struct * const) &pstate->changed_regs);
+    if (error_occurred()) return;
 
     DEBUG("%s process' state restored", pstate->name);
 }
