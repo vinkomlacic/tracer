@@ -13,7 +13,6 @@
 #include "log.h"
 
 
-
 int virus(int argument) {
     return argument + 1;
 }

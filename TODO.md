@@ -81,7 +81,7 @@
  
 ## 10. Documentation
 *   Write API instructions and add comments to clarify actions where necessary
-*   Create the report for 
+*   Create the report
 
 ## 11. options
 *   Adapt options to be more versatile, some things are hardcoded currently.
