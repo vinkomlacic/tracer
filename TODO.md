@@ -20,6 +20,9 @@
     (returns the error message for a certain error code).
 ### t_error struct
 *   Optimize t_error struct to minimize padding.
+### Error reporting (low priority)
+*   Consider creating a stack data structure to hold the error from lower levels of code so the
+    whole error stack can be reported in order to better display the cause of the error.
 
 
 ## 3. process_control
