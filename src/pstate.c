@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <string.h>
 
 #include "log.h"
@@ -9,22 +10,9 @@
 #include "pstate.h"
 
 
-extern pstate_t create_pstate(void) {
-    pstate_t pstate = {
-            .pid = 0,
-            .name = "",
-            .change_address = 0,
-            .changed_code_len = 0,
-            .changed_code = {0}
-    };
-
-    return pstate;
-}
-
-
-extern void save_process_regs(pstate_t *pstate) {
-    if (pstate->pid == 0) {
-        WARN("pstate pid uninitialized. Returning from save_process_regs");
+extern void save_process_regs(pstate_t * const pstate) {
+    if (pstate == NULL) {
+        raise(T_EPSTATE_INVALID, "pstate is null");
         return;
     }
 
@@ -36,13 +24,16 @@ extern void save_process_regs(pstate_t *pstate) {
 
 extern void save_process_code(pstate_t * const pstate, intptr_t const start_address, size_t const code_size) {
     if (pstate == NULL) {
-        raise(T_ENULL_ARG, "pstate is null");
+        raise(T_EPSTATE_INVALID, "pstate is null");
+        return;
+    } else if (start_address == 0) {
+        raise(T_EADDRESS, "%#lx", start_address);
         return;
     }
 
     if (pstate->changed_code_len == 0) pstate->change_address = start_address;
 
-    DEBUG("Saving process code");
+    DEBUG("Copying %lu bytes of process code from %#lx", code_size, start_address);
     for (size_t i = 0; i < code_size; i++) {
         pstate->changed_code[pstate->changed_code_len] = proc_read_byte(pstate->pid, start_address + i);
         pstate->changed_code_len++;
@@ -53,11 +44,11 @@ extern void save_process_code(pstate_t * const pstate, intptr_t const start_addr
 
 extern void revert_to(pstate_t const * const pstate) {
     if (pstate == NULL) {
-        raise(T_ENULL_ARG, "pstate arg is null");
+        raise(T_EPSTATE_INVALID, "pstate is null");
         return;
     }
 
-    DEBUG("Restoring instructions in code");
+    DEBUG("Restoring %lu bytes in code at %#lx", pstate->changed_code_len, pstate->change_address);
     for (size_t i = 0; i < pstate->changed_code_len; i++) {
         proc_write_byte(pstate->pid, pstate->change_address + i, pstate->changed_code[i]);
         if (error_occurred()) return;
@@ -67,13 +58,13 @@ extern void revert_to(pstate_t const * const pstate) {
     set_regs(pstate->pid, (struct user_regs_struct * const) &pstate->changed_regs);
     if (error_occurred()) return;
 
-    DEBUG("%s process' state restored", pstate->name);
+    DEBUG("\"%s\" process' state restored", pstate->name);
 }
 
 
 extern intptr_t get_address_after_changes(pstate_t const * const pstate) {
     if (pstate == NULL) {
-        raise(T_ENULL_ARG, "pstate arg is null");
+        raise(T_EPSTATE_INVALID, "pstate is null");
         return 0;
     }
 

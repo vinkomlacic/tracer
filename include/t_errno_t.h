@@ -42,5 +42,7 @@ typedef enum {
   T_EWRITE = -19,                 // generic write error
   T_EPTRACE = -20,                // ptrace error
   T_EWAIT = -21,                  // wait / waitpid / waitid error
-  T_EFUNC_TOO_BIG = -22,           // function code is too big
+  T_EFUNC_TOO_BIG = -22,          // function code is too big
+  T_EPSTATE_INVALID = -23,        // pstate struct is in illegal state
+  T_EADDRESS = -24,               // address is invalid
 } t_errno_t;

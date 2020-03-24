@@ -25,7 +25,6 @@ extern void t_strerror(t_errno_t const error_code, size_t const string_length, c
             strncpy(output, "No error", string_length);
             break;
 
-        case T_ERROR:
         case T_EPOPEN:
         case T_EPCLOSE:
         case T_EPREAD:
@@ -89,6 +88,15 @@ extern void t_strerror(t_errno_t const error_code, size_t const string_length, c
             strncpy(output, "function code is too big", string_length);
             break;
 
+        case T_EPSTATE_INVALID:
+            strncpy(output, "illegal pstate", string_length);
+            break;
+
+        case T_EADDRESS:
+            strncpy(output, "invalid address provided", string_length);
+            break;
+
+        case T_ERROR:
         default:
             strncpy(output, "unrecognized error", string_length);
     }
