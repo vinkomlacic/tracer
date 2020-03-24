@@ -25,7 +25,7 @@ int main(int const argc, char const * const argv[const]) {
     check_for_error();
 
     INFO("Initializing pstate struct. Getting pid of the target...");
-    pstate_t pstate = {.name = target, .pid = get_pid(target)};
+    pstate_t pstate = {.pid = get_pid(target)};
     check_for_error();
     INFO("PID found: %d", pstate.pid);
 

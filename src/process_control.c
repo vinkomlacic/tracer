@@ -102,7 +102,7 @@ static unsigned long long get_return_value(pid_t const pid) {
 extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignment, size_t const size) {
     intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, POSIX_MEMALIGN_GLIBC_NAME);
     if (function_address == 0L && error_occurred()) return -1;
-    DEBUG("Function address in %s: %#lx", pstate->name, function_address);
+    DEBUG("Function address in %d: %#lx", pstate->pid, function_address);
 
     intptr_t stack_variable = allocate_stack_variable(pstate->pid);
     if (error_occurred()) return -1;
@@ -170,7 +170,7 @@ static void deallocate_stack_variable(pid_t const pid) {
 extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address, size_t const length, int const prot) {
     intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, MPROTECT_GLIBC_NAME);
     if (function_address == 0L && error_occurred()) return;
-    DEBUG("Function address in %s: %#lx", pstate->name, function_address);
+    DEBUG("Function address in %d: %#lx", pstate->pid, function_address);
 
     unsigned long long int const argv[] = {start_address, length, prot};
     size_t const argc = 3;
@@ -206,7 +206,7 @@ extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address,
 extern void call_free(pstate_t * const pstate, intptr_t const address) {
     intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, FREE_GLIBC_NAME);
     if (function_address == 0L && error_occurred()) return;
-    DEBUG("Function address in %s: %#lx", pstate->name, function_address);
+    DEBUG("Function address in %d: %#lx", pstate->pid, function_address);
 
     unsigned long long int const argv[] = {address};
     size_t const argc = 1;

@@ -17,6 +17,5 @@ typedef struct PSTATE {
     intptr_t change_address;
     pid_t const pid;
     unsigned short changed_code_len;
-    char const * name;
     uint8_t changed_code[CODE_TO_RESTORE_MAX];
 } pstate_t;

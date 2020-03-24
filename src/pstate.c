@@ -58,7 +58,7 @@ extern void revert_to(pstate_t const * const pstate) {
     set_regs(pstate->pid, (struct user_regs_struct * const) &pstate->changed_regs);
     if (error_occurred()) return;
 
-    DEBUG("\"%s\" process' state restored", pstate->name);
+    DEBUG("%d process' state restored", pstate->pid);
 }
 
 
