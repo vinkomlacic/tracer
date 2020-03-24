@@ -29,7 +29,7 @@ extern options_t parse_options(int const argc, char const * const argv[const]) {
                 return options;
 
             default:
-                FATAL("Unexpected exception while parsing command line. Aborting.");
+                ERROR("Unexpected exception while parsing command line. Aborting.");
                 exit(EXIT_FAILURE);
         }
 

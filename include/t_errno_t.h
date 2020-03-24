@@ -45,4 +45,5 @@ typedef enum {
   T_EFUNC_TOO_BIG = -22,          // function code is too big
   T_EPSTATE_INVALID = -23,        // pstate struct is in illegal state
   T_EADDRESS = -24,               // address is invalid
+  T_EUNKNOWN_COLOR = -25,         // unknown color
 } t_errno_t;
