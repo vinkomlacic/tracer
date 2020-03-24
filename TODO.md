@@ -63,6 +63,9 @@
 ### Cleanup logs
 *   Clear unnecessary logging outputs
 *   Clearly define what should be put on each log level and enforce (note: TRACE level is not used much)
+### Add colors to console output
+*   It is possible to add colors to the output. 
+    Suggestion: color code various outputs and style filenames and line numbers. 
     
 ## 7. Warnings
 ### Clean up warnings
