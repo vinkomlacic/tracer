@@ -4,22 +4,23 @@
 ### ~~Get rid of dependency on the target name~~
 *   Work it out so everything works with PID.
     Piping to pgrep is expensive and that's what happens every time you call `get_pid(pid_t)`.
-
 ### ~~Add a specific error~~
 *   `get_function_code`: make a specific error when the function is too big (`> MAX_CODE_LEN`).
-
 ### ~~Refactor into smaller functions~~
 *   The module needs refactoring
+
 
 ## 2. t_error
 ### ~~Contextual error reporting~~
 *   Add support for context reporting in error messages. Currently, what happens is that
     only a message is printed corresponding to the error code. Using macros and structs,
     actual line number and file could be reported with a customized message.
-    
 ### ~~t_strerror~~
 *   Define `t_strerror` function which is analogous to the strerror from `string.h` header 
     (returns the error message for a certain error code).
+### t_error struct
+*   Optimize t_error struct to minimize padding.
+
 
 ## 3. process_control
 ### ~~General refactoring~~
@@ -29,12 +30,10 @@
     
     **comment:** an interface for function calling like this turned out to be an overkill and a complication
     to implement so it's discarded
- 
-### Validation
-*   Validation of pstate is important before calling functions.
+
 
 ## 4. procmem
-### General refactoring
+### ~~General refactoring~~
 *   This module needs a bit of refactoring because a lot of duplicated code is found.
     It would be nice to extract functions that open, prepare and close a file.
     
@@ -42,10 +41,12 @@
 ### Struct initialization
 *   Check how exactly are structs initialized. It is possible that `create_pstate()` is
     redundant. Maybe using designated (or not) initializers could be beneficial.
-
 ### Validation 
 *   Write down illegal pstate states and make functions that validate this state. Declare error codes and 
-    define what exactly is an uninitialized state and how state must look like to be valid.
+    define what exactly is an uninitialized state and how state must look like to be valid.    
+### PSTATE struct
+*   Optimize pstate_t struct to minimize padding.
+
 
 ## 6. options
 ### Support more options
