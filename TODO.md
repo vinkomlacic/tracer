@@ -41,10 +41,10 @@
     It would be nice to extract functions that open, prepare and close a file.
     
 ## 5. pstate_t and pstate
-### Struct initialization
+### ~~Struct initialization~~
 *   Check how exactly are structs initialized. It is possible that `create_pstate()` is
     redundant. Maybe using designated (or not) initializers could be beneficial.
-### Validation 
+### ~~Validation~~ 
 *   Write down illegal pstate states and make functions that validate this state. Declare error codes and 
     define what exactly is an uninitialized state and how state must look like to be valid.    
 ### PSTATE struct
@@ -52,9 +52,10 @@
 
 
 ## 6. options
-### Support more options
+### ~~Support more options~~
 *   Currently not everything is covered by the options (actually just the cleanup mode is covered) so
     it's required to add more options to avoid hardcoding stuff like target process and target functions.
+### Help option
 *   Another note, a help option is needed as well so define exactly how the help should look like and
     whether it should be printed on error (maybe only on some errors?) or only when `-h` option is
     specified.
@@ -94,27 +95,35 @@
 *   Adapt options to be more versatile, some things are hardcoded currently.
 
 ## 12. tracer
-### Divide program into parts
+### ~~Divide program into parts~~
 As it is now the program inspects the binary and the process memory several times unnecessarily.
-This could be optimize if the program flow is organized a bit better.
+This could be optimized if the program flow is organized a bit better.
 Proposed organization is placed below.
-#### Part 0 (if time allows): Scanning for prerequisite tools
-*   nm
-*   objdump
-*   cat
-*   grep  
-#### Part I: Scanning the CLI options
-#### Part II: Inspecting the target binary
-#### Part III: Hooking up to the running process
-#### Part IV: Inspecting the target process and shared libraries
-#### Part V: Injecting virus
-#### Part VI.a: Cleanup option
+#### ~~Part I: Scanning the CLI options~~
+#### ~~Part II: Inspecting the target binary~~
+#### ~~Part III: Hooking up to the running process~~
+#### ~~Part IV: Inspecting the target process and shared libraries~~
+#### ~~Part V: Injecting virus~~
+#### ~~Part VI.a: Cleanup option~~
 *   Executes the virus
 *   Scrubs the virus from memory
 *   Reverts the memory permissions as they were before (heap permissions)
 *   Frees the allocated memory for the virus
-#### Part VI.b: Virus injection option
+#### ~~Part VI.b: Virus injection option~~
 *   Creates a trampoline in the entry function which calls the virus instead of the function
     each time the function is called
-#### Part VII: Reverting the process to a state of execution where it was before the tracer attached
-#### Part VIII: Releasing the traced process
+#### ~~Part VII: Reverting the process to a state of execution where it was before the tracer attached~~
+#### ~~Part VIII: Releasing the traced process~~
+
+### Scanning for prerequisite tools
+   *   nm      - inspects target binary and libc.so
+   *   cat     - read process memory and similar important files
+   *   grep    - filters output for easier managing (consider using scanf instead for this)
+   *   ldd     - lists objects dependencies for dynamic linking
+   *   pgrep   - get process ID from it's name
+
+## 13. Virus
+### Support injecting virus function from another binary
+*   Virus is injected as the code from a static function in the main file.
+    This could be made like loading a binary and executing this code.
+    

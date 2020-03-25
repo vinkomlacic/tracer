@@ -12,11 +12,6 @@
 
 #include "pstate_t.h"
 
-/* Function names in the libc library - convenient for efficient grepping */
-#define POSIX_MEMALIGN_GLIBC_NAME "posix_memalign@@GLIBC"
-#define MPROTECT_GLIBC_NAME "__mprotect@@GLIBC"
-#define FREE_GLIBC_NAME "__libc_free@@GLIBC"
-
 
 /**
  * Blocks the calling thread until the breakpoint is hit or the target process dies.
@@ -27,10 +22,10 @@ extern void wait_for_breakpoint(pid_t pid);
 extern int call_virus(pstate_t *pstate, intptr_t virus_address, int arg);
 
 
-extern intptr_t call_posix_memalign(pstate_t *pstate, size_t alignment, size_t size);
+extern intptr_t call_posix_memalign(pstate_t *pstate, intptr_t posix_memalign_address, size_t alignment, size_t size);
 
 
-extern void call_mprotect(pstate_t *pstate, intptr_t start_address, size_t length, int prot);
+extern void call_mprotect(pstate_t *pstate, intptr_t mprotect_address, intptr_t start_address, size_t length, int prot);
 
 
-extern void call_free(pstate_t * pstate, intptr_t address);
+extern void call_free(pstate_t * pstate, intptr_t free_address, intptr_t address);

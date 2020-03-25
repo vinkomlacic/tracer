@@ -6,7 +6,6 @@
 #include "t_error.h"
 #include "procmem.h"
 #include "log.h"
-#include "process_info.h"
 #include "pstate.h"
 #include "ptrace_wrapper.h"
 #include "inject_code.h"
@@ -99,11 +98,10 @@ static unsigned long long get_return_value(pid_t const pid) {
 }
 
 
-extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignment, size_t const size) {
-    intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, POSIX_MEMALIGN_GLIBC_NAME);
-    if (function_address == 0L && error_occurred()) return -1;
-    DEBUG("Function address in %d: %#lx", pstate->pid, function_address);
-
+extern intptr_t call_posix_memalign(
+        pstate_t * const pstate, intptr_t const posix_memalign_address,
+        size_t const alignment, size_t const size
+) {
     intptr_t stack_variable = allocate_stack_variable(pstate->pid);
     if (error_occurred()) return -1;
 
@@ -112,7 +110,7 @@ extern intptr_t call_posix_memalign(pstate_t * const pstate, size_t const alignm
     set_arguments(pstate->pid, argc, argv);
 
     intptr_t address = get_address_after_changes(pstate);
-    inject_indirect_call_at(pstate, address, function_address);
+    inject_indirect_call_at(pstate, address, posix_memalign_address);
     if (error_occurred()) return -1;
 
 #ifdef DEBUG_ENABLE
@@ -167,18 +165,17 @@ static void deallocate_stack_variable(pid_t const pid) {
 }
 
 
-extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address, size_t const length, int const prot) {
-    intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, MPROTECT_GLIBC_NAME);
-    if (function_address == 0L && error_occurred()) return;
-    DEBUG("Function address in %d: %#lx", pstate->pid, function_address);
-
+extern void call_mprotect(
+        pstate_t * const pstate, intptr_t const mprotect_address,
+        intptr_t const start_address, size_t const length, int const prot
+) {
     unsigned long long int const argv[] = {start_address, length, prot};
     size_t const argc = 3;
     set_arguments(pstate->pid, argc, argv);
     if (error_occurred()) return;
 
     intptr_t address = get_address_after_changes(pstate);
-    inject_indirect_call_at(pstate, address, function_address);
+    inject_indirect_call_at(pstate, address, mprotect_address);
     if (error_occurred()) return;
 
 #ifdef DEBUG_ENABLE
@@ -203,18 +200,14 @@ extern void call_mprotect(pstate_t * const pstate, intptr_t const start_address,
 }
 
 
-extern void call_free(pstate_t * const pstate, intptr_t const address) {
-    intptr_t const function_address = get_symbol_address_in_libc(pstate->pid, FREE_GLIBC_NAME);
-    if (function_address == 0L && error_occurred()) return;
-    DEBUG("Function address in %d: %#lx", pstate->pid, function_address);
-
+extern void call_free(pstate_t * const pstate, intptr_t const free_address, intptr_t const address) {
     unsigned long long int const argv[] = {address};
     size_t const argc = 1;
     set_arguments(pstate->pid, argc, argv);
     if (error_occurred()) return;
 
     intptr_t const indirect_call_address = get_address_after_changes(pstate);
-    inject_indirect_call_at(pstate, indirect_call_address, function_address);
+    inject_indirect_call_at(pstate, indirect_call_address, free_address);
     if (error_occurred()) return;
 
 #ifdef DEBUG_ENABLE

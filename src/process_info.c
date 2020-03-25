@@ -12,29 +12,7 @@
 #include "process_info.h"
 
 
-static intptr_t get_symbol_offset(pid_t pid, char const symbol[]);
-static intptr_t get_symbol_offset_in_lib(char const lib_path[], char const symbol[]);
-static intptr_t locate_libc_in(pid_t pid);
-static intptr_t get_process_base_address(pid_t pid);
-static void get_libc_path(pid_t pid, char path[]);
-
-
-extern intptr_t get_symbol_address_in_target(pid_t const pid, char const symbol[const]) {
-    intptr_t const base_address = get_process_base_address(pid);
-    DEBUG("base_address: %#lx", base_address);
-
-    intptr_t const offset = get_symbol_offset(pid, symbol);
-    if (offset == 0) {
-        raise(T_ESYMBOL_NOT_FOUND, "symbol: %s", symbol);
-        return 0;
-    }
-    DEBUG("offset: %#x", offset);
-
-    return base_address + offset;
-}
-
-
-static intptr_t get_process_base_address(pid_t const pid) {
+extern intptr_t get_process_base_address(pid_t const pid) {
     char command[PATH_MAX] = {0};
 
     int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*`pgrep -n %d`", pid, pid);
@@ -48,10 +26,16 @@ static intptr_t get_process_base_address(pid_t const pid) {
 }
 
 
-static intptr_t get_symbol_offset(pid_t const pid, char const symbol[const]) {
+extern intptr_t get_symbol_offset_in_binary(char const binary_path[const], char const symbol[const], bool const shared_object) {
     char command[PATH_MAX] = {0};
 
-    int const printed_characters = snprintf(command, PATH_MAX, "nm `cat /proc/%d/comm` | grep %s", pid, symbol);
+    int printed_characters = 0;
+    if (shared_object) {
+        printed_characters = snprintf(command, PATH_MAX, "nm -D %s | grep -w %s", binary_path, symbol);
+    } else {
+        printed_characters = snprintf(command, PATH_MAX, "nm %s | grep -w %s", binary_path, symbol);
+    }
+
     if (printed_characters < 0) {
         raise(T_EPRINTF, "snprintf failed");
         return 0;
@@ -62,26 +46,7 @@ static intptr_t get_symbol_offset(pid_t const pid, char const symbol[const]) {
 }
 
 
-extern intptr_t get_symbol_address_in_libc(pid_t const pid, const char *symbol) {
-    intptr_t const base_address = locate_libc_in(pid);
-    DEBUG("base_address: %#lx", base_address);
-
-    char lib_path[PATH_MAX] = {0};
-    get_libc_path(pid, lib_path);
-    if (error_occurred()) return 0;
-
-    intptr_t const offset = get_symbol_offset_in_lib(lib_path, symbol);
-    if (offset == 0) {
-        raise(T_ESYMBOL_NOT_FOUND, "symbol: %s", symbol);
-        return 0;
-    }
-    DEBUG("offset: %#x", offset);
-
-    return base_address + offset;
-}
-
-
-static intptr_t locate_libc_in(pid_t const pid) {
+extern intptr_t locate_libc_in(pid_t const pid) {
     char command[PATH_MAX] = {0};
 
     int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*%s", pid, LIBC_NAME);
@@ -95,10 +60,10 @@ static intptr_t locate_libc_in(pid_t const pid) {
 }
 
 
-static void get_libc_path(pid_t const pid, char path[const]) {
+extern void get_libc_path(char const binary_path[const], char path[const]) {
     char command[PATH_MAX] = {0};
 
-    int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep -o -e \"/.*%s.*$\"", pid, LIBC_NAME);
+    int printed_characters = snprintf(command, PATH_MAX, "ldd %s | grep -o -e \"/.*%s.* \"", binary_path, LIBC_NAME);
     if (printed_characters < 0) {
         raise(T_EPRINTF, "snprintf failed");
         return;
@@ -107,20 +72,6 @@ static void get_libc_path(pid_t const pid, char path[const]) {
 
     pread_raw_line(command, path);
     path[strlen(path) - 1] = '\0'; // deletes the newline at the end
-}
-
-
-static intptr_t get_symbol_offset_in_lib(char const lib_path[const], char const symbol[const]) {
-    char command[PATH_MAX] = {0};
-
-    int const printed_characters = snprintf(command, PATH_MAX, "objdump -d %s | grep -e \"<.*%s.*>:\"", lib_path, symbol);
-    if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
-        return 0;
-    }
-    DEBUG("Getting symbol offset => %s", command);
-
-    return pread_word(command);
 }
 
 
