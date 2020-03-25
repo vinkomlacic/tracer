@@ -10,6 +10,7 @@
 
 
 /**
+ * TODO: correct docs
  * Parses the argv array and returns a struct containing all values provided.
  * The function heavily relies on the getopt GNU library.
  *
@@ -25,4 +26,4 @@
  *
  * On success, populated options_t struct is returned.
  */
-extern options_t parse_options(int argc, char const * const argv[]);
+extern void parse_options(int argc, char const * const argv[], options_t * options);

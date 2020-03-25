@@ -18,30 +18,37 @@ int virus(int argument) {
 }
 
 
+static size_t const FUN_COUNT = 4;
+enum FUNCTION {ENTRY_FUNCTION, POSIX_MEMALIGN, MPROTECT, FREE};
+
+static void inspect_target_binary(char const binary_path[], char const entry_function[], intptr_t function_offset[]);
+static pstate_t attach_to_process(char const process_name[]);
+static void inspect_running_process(pid_t pid, intptr_t const function_offset[], intptr_t function_address[]);
+
+
 int main(int const argc, char const * const argv[const]) {
-    char const target[] = "tracee";
-    char const symbol[] = "f1";
-    options_t options = parse_options(argc, argv);
+    options_t options = {false, "", "", ""};
+    parse_options(argc, argv, &options);
     check_for_error();
 
     INFO("Initializing pstate struct. Getting pid of the target...");
-    pstate_t pstate = {.pid = get_pid(target)};
+    pstate_t pstate = {.pid = get_pid(options.process_name)};
     check_for_error();
     INFO("PID found: %d", pstate.pid);
 
-    INFO("Looking up %s in the targets symbol table...", symbol);
-    intptr_t const entry_function = get_symbol_address_in_target(pstate.pid, symbol);
+    INFO("Looking up %s in the targets symbol table...", options.entry_function);
+    intptr_t const entry_function = get_symbol_address_in_target(pstate.pid, options.entry_function);
     check_for_error();
-    INFO("Symbol %s found at address: %#lx", symbol, entry_function);
+    INFO("Symbol %s found at address: %#lx", options.entry_function, entry_function);
 
     pattach(pstate.pid);
     check_for_error();
-    INFO("Target \"%s\" attached. Target process stopped.", target);
+    INFO("Target \"%s\" attached. Target process stopped.", options.process_name);
 
     INFO("Changing process memory at %#lx", entry_function);
     inject_breakpoint(&pstate, entry_function);
     check_for_error();
-    INFO("Breakpoint injected at %#lx <%s>", pstate.change_address, symbol);
+    INFO("Breakpoint injected at %#lx <%s>", pstate.change_address, options.entry_function);
 
     INFO("Continuing execution");
     pcontinue(pstate.pid);
@@ -103,7 +110,7 @@ int main(int const argc, char const * const argv[const]) {
     if (options.clean == false) {
         inject_trampoline(pstate.pid, entry_function, memory_address);
         check_for_error();
-        INFO("Injected trampoline. Releasing %s", target);
+        INFO("Injected trampoline. Releasing %s", options.process_name);
     }
 
     INFO("Detaching the target process.");
@@ -111,4 +118,21 @@ int main(int const argc, char const * const argv[const]) {
     check_for_error();
 
     return EXIT_SUCCESS;
+}
+
+
+static void inspect_target_binary(char const binary_path[], char const entry_function[], intptr_t function_offset[]) {
+    // TODO
+}
+
+
+static pstate_t attach_to_process(char const process_name[]) {
+    // TODO
+    pstate_t pstate = {.pid = 0};
+    return pstate;
+}
+
+
+static void inspect_running_process(pid_t pid, intptr_t const function_offset[], intptr_t function_address[]) {
+    // TODO
 }

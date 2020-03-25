@@ -4,7 +4,13 @@
 #pragma once
 
 #include <stdbool.h>
+#include <limits.h>
+
+#define FUNCTION_NAME_MAX 256
 
 typedef struct {
   bool clean;
+  char binary_path[PATH_MAX];
+  char process_name[PATH_MAX];
+  char entry_function[FUNCTION_NAME_MAX];
 } options_t;
