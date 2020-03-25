@@ -91,10 +91,7 @@
 *   Write API instructions and add comments to clarify actions where necessary
 *   Create the report
 
-## 11. options
-*   Adapt options to be more versatile, some things are hardcoded currently.
-
-## 12. tracer
+## 11. tracer
 ### ~~Divide program into parts~~
 As it is now the program inspects the binary and the process memory several times unnecessarily.
 This could be optimized if the program flow is organized a bit better.
@@ -115,12 +112,12 @@ Proposed organization is placed below.
 #### ~~Part VII: Reverting the process to a state of execution where it was before the tracer attached~~
 #### ~~Part VIII: Releasing the traced process~~
 
-### Scanning for prerequisite tools
-   *   nm      - inspects target binary and libc.so
-   *   cat     - read process memory and similar important files
-   *   grep    - filters output for easier managing (consider using scanf instead for this)
-   *   ldd     - lists objects dependencies for dynamic linking
-   *   pgrep   - get process ID from it's name
+## 12. Scanning for prerequisite tools
+*   nm - inspects target binary and libc.so
+*   cat - read process memory and similar important files
+*   grep - filters output for easier managing (consider using scanf instead for this)
+*   ldd - lists objects dependencies for dynamic linking
+*   pgrep - get process ID from it's name
 
 ## 13. Virus
 ### Support injecting virus function from another binary
