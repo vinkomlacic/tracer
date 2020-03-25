@@ -39,5 +39,5 @@ __attribute__ ((format(printf, 3, 4)))
 extern void warn(char const filename[], unsigned line, char const format[], ...);
 
 
-__attribute__ ((format(printf, 3, 4)))
-extern void error(char const filename[], unsigned line, char const format[], ...);
+__attribute__ ((format(printf, 1, 2)))
+extern void error(char const format[], ...);

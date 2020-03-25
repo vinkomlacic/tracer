@@ -18,7 +18,7 @@ extern void trace(char const filename[const], unsigned const line, char const fo
     va_start(arguments, format);
 
     set_console_color(TRACE_COLOR, TRACE_COLOR_BOLD);
-    printf("%-6s [%-20s:%-4d]  ", "TRACE", filename, line);
+    printf(OUTPUT_FORMAT, "TRACE", filename, line);
     vprintf(format, arguments);
     printf("\n");
     reset_console_color();
@@ -33,7 +33,7 @@ extern void debug(char const filename[const], unsigned const line, char const fo
     va_start(arguments, format);
 
     set_console_color(DEBUG_COLOR, DEBUG_COLOR_BOLD);
-    printf("%-6s [%-20s:%-4d]  ", "DEBUG", filename, line);
+    printf(OUTPUT_FORMAT, "DEBUG", filename, line);
     vprintf(format, arguments);
     printf("\n");
     reset_console_color();
@@ -48,7 +48,7 @@ extern void info(char const filename[const], unsigned const line, char const for
     va_start(arguments, format);
 
     set_console_color(INFO_COLOR, INFO_COLOR_BOLD);
-    printf("%-6s [%-20s:%-4d]  ", "INFO", filename, line);
+    printf(OUTPUT_FORMAT, "INFO", filename, line);
     vprintf(format, arguments);
     printf("\n");
     reset_console_color();
@@ -63,7 +63,7 @@ extern void warn(char const filename[const], unsigned const line, char const for
     va_start(arguments, format);
 
     set_console_color(WARN_COLOR, WARN_COLOR_BOLD);
-    printf("%-6s [%-20s:%-4d]  ", "WARN", filename, line);
+    printf(OUTPUT_FORMAT, "WARN", filename, line);
     vprintf(format, arguments);
     printf("\n");
     reset_console_color();
@@ -72,13 +72,13 @@ extern void warn(char const filename[const], unsigned const line, char const for
 }
 
 
-__attribute__ ((format(printf, 3, 4)))
-extern void error(char const filename[const], unsigned const line, char const format[const], ...) {
+__attribute__ ((format(printf, 1, 2)))
+extern void error(char const format[const], ...) {
     va_list arguments;
     va_start(arguments, format);
 
     set_console_color_os(stderr, ERROR_COLOR, ERROR_COLOR_BOLD);
-    fprintf(stderr, "%-6s [%-20s:%-4d]  ", "ERROR", filename, line);
+    fprintf(stderr, "%-6s ", "ERROR");
     vfprintf(stderr, format, arguments);
     fprintf(stderr, "\n");
     reset_console_color_os(stderr);

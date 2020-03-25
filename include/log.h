@@ -37,4 +37,4 @@
 #define WARN(...)
 #endif
 
-#define ERROR(...) error(__BASE_FILE__, __LINE__, __VA_ARGS__)
+#define ERROR(...) error(__VA_ARGS__)
