@@ -112,7 +112,6 @@ extern void t_strerror(t_errno_t const error_code, size_t const string_length, c
             break;
 
         case T_ERROR:
-        default:
             strncpy(output, "unrecognized error", string_length);
     }
 }

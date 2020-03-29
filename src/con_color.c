@@ -46,8 +46,6 @@ extern void set_console_color_os(FILE * const file, ansi_color_t const color, bo
         case WHITE:
             fprintf(file, "\x1B[%d;37m", bold ? 1 : 0);
             break;
-        default:
-            raise(T_EUNKNOWN_COLOR, "%d", color);
     }
 }
 
