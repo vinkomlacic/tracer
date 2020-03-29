@@ -26,4 +26,4 @@
  *
  * On success, populated options_t struct is returned.
  */
-extern void parse_options(int argc, char const * const argv[], options_t * options);
+extern void parse_options(int argc, char * const argv[], options_t * options);

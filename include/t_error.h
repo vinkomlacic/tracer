@@ -17,7 +17,7 @@
  * Prints the error message of currently set t_errno variable.
  * Error is outputted to stderr stream.
  */
-extern void t_perror();
+extern void t_perror(void);
 
 
 /**

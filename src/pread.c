@@ -13,7 +13,12 @@ static void pread_item(char const command[], char const format[], ...);
 
 extern intptr_t pread_word(char const command[const]) {
   intptr_t output = 0L;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
   pread_item(command, "%lx", &output);
+#pragma GCC diagnostic pop
+
   if (error_occurred()) {
     return 0L;
   }

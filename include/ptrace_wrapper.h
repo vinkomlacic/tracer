@@ -26,7 +26,7 @@ extern struct user_regs_struct get_regs(pid_t pid);
 /**
  * Sets the registers on the currently running process.
  */
-extern void set_regs(pid_t pid, struct user_regs_struct *regs);
+extern void set_regs(pid_t pid, struct user_regs_struct const * regs);
 
 
 /**

@@ -36,7 +36,7 @@ extern void wait_for_breakpoint(pid_t const pid) {
 
 
 extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int const arg) {
-    unsigned long long int const argv[] = {arg};
+    unsigned long long int const argv[] = {(unsigned long long int) arg};
     size_t const argc = 3;
     set_arguments(pstate->pid, argc, argv);
     if (error_occurred()) return -1;
@@ -95,13 +95,13 @@ static unsigned long long get_return_value(pid_t const pid) {
 
 extern intptr_t call_posix_memalign(
         pstate_t * const pstate, intptr_t const posix_memalign_address,
-        size_t const alignment, size_t const size
+        int const alignment, size_t const size
 ) {
     intptr_t stack_variable = allocate_stack_variable(pstate->pid);
     if (error_occurred()) return -1;
     DEBUG("Stack variable allocated, address: %#lx", stack_variable);
 
-    unsigned long long int const argv[] = {stack_variable, alignment, size};
+    unsigned long long int const argv[] = {(unsigned long long int) stack_variable, (unsigned) alignment, size};
     size_t const argc = 3;
     set_arguments(pstate->pid, argc, argv);
 
@@ -142,7 +142,7 @@ static intptr_t allocate_stack_variable(pid_t const pid) {
     set_regs(pid, &regs);
     if (error_occurred()) return -1;
 
-    return regs.rsp;
+    return (intptr_t) regs.rsp;
 }
 
 
@@ -161,7 +161,7 @@ extern void call_mprotect(
         pstate_t * const pstate, intptr_t const mprotect_address,
         intptr_t const start_address, size_t const length, int const prot
 ) {
-    unsigned long long int const argv[] = {start_address, length, prot};
+    unsigned long long int const argv[] = {(unsigned long long int) start_address, length, (unsigned) prot};
     size_t const argc = 3;
     set_arguments(pstate->pid, argc, argv);
     if (error_occurred()) return;
@@ -186,7 +186,7 @@ extern void call_mprotect(
 
 
 extern void call_free(pstate_t * const pstate, intptr_t const free_address, intptr_t const address) {
-    unsigned long long int const argv[] = {address};
+    unsigned long long int const argv[] = {(unsigned long long int) address};
     size_t const argc = 1;
     set_arguments(pstate->pid, argc, argv);
     if (error_occurred()) return;

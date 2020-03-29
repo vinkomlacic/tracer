@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <string.h>
 
 #include "log.h"
@@ -34,7 +33,7 @@ extern void save_process_code(pstate_t * const pstate, intptr_t const start_addr
     if (pstate->changed_code_len == 0) pstate->change_address = start_address;
 
     for (size_t i = 0; i < code_size; i++) {
-        pstate->changed_code[pstate->changed_code_len] = proc_read_byte(pstate->pid, start_address + i);
+        pstate->changed_code[pstate->changed_code_len] = proc_read_byte(pstate->pid, start_address + (intptr_t) i);
         pstate->changed_code_len++;
         if (error_occurred()) return;
     }
@@ -49,12 +48,12 @@ extern void revert_to(pstate_t const * const pstate) {
     }
 
     for (size_t i = 0; i < pstate->changed_code_len; i++) {
-        proc_write_byte(pstate->pid, pstate->change_address + i, pstate->changed_code[i]);
+        proc_write_byte(pstate->pid, pstate->change_address + (intptr_t) i, pstate->changed_code[i]);
         if (error_occurred()) return;
     }
     DEBUG("Restored %lu bytes in code at %#lx", pstate->changed_code_len, pstate->change_address);
 
-    set_regs(pstate->pid, (struct user_regs_struct * const) &pstate->changed_regs);
+    set_regs(pstate->pid, &pstate->changed_regs);
     if (error_occurred()) return;
     DEBUG("Process registers restored");
 }
@@ -66,5 +65,5 @@ extern intptr_t get_address_after_changes(pstate_t const * const pstate) {
         return 0;
     }
 
-    return pstate->change_address + pstate->changed_code_len;
+    return pstate->change_address + (intptr_t) pstate->changed_code_len;
 }

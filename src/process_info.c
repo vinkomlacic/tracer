@@ -84,7 +84,7 @@ extern size_t get_function_code(pid_t const pid, intptr_t const start_address, u
     uint8_t const retq_instruction = 0xC3;
     size_t i = 0;
     for (; i < MAX_CODE_LENGTH; i++) {
-        uint8_t const byte = proc_read_byte(pid, start_address + i);
+        uint8_t const byte = proc_read_byte(pid, start_address + (intptr_t) i);
         if (error_occurred()) return 0;
 
         code_output[i] = byte;

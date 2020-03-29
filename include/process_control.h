@@ -22,7 +22,7 @@ extern void wait_for_breakpoint(pid_t pid);
 extern int call_virus(pstate_t *pstate, intptr_t virus_address, int arg);
 
 
-extern intptr_t call_posix_memalign(pstate_t *pstate, intptr_t posix_memalign_address, size_t alignment, size_t size);
+extern intptr_t call_posix_memalign(pstate_t *pstate, intptr_t posix_memalign_address, int alignment, size_t size);
 
 
 extern void call_mprotect(pstate_t *pstate, intptr_t mprotect_address, intptr_t start_address, size_t length, int prot);

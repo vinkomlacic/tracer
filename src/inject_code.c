@@ -26,7 +26,7 @@ extern void inject_raw_code_to_process(pid_t const pid, intptr_t const address, 
     }
 
     for (size_t i = 0; i < code_size; i++) {
-        intptr_t current_address = address + i;
+        intptr_t current_address = address + (intptr_t) i;
         proc_write_byte(pid, current_address, code[i]);
         if (error_occurred()) return;
     }
@@ -69,17 +69,17 @@ extern void inject_trampoline(pid_t const pid, intptr_t const address, intptr_t 
 
     intptr_t current_address = address;
     inject_raw_code_to_process(pid, current_address, sizeof(jump_instruction), jump_instruction);
-    current_address += sizeof(jump_instruction);
+    current_address += (intptr_t) sizeof(jump_instruction);
     if (error_occurred()) return;
 
     proc_write_word(pid, current_address, function_address);
-    current_address += sizeof(function_address);
+    current_address += (intptr_t) sizeof(function_address);
     if (error_occurred()) return;
     DEBUG("Injected jump instruction to %#lx at %#lx", function_address, address);
 
     inject_raw_code_to_process(pid, current_address, sizeof(end_instruction), end_instruction);
     if (error_occurred()) return;
-    DEBUG("Injected end instruction at %#lx");
+    DEBUG("Injected end instruction at %#lx", current_address);
 }
 
 
@@ -90,7 +90,7 @@ extern void scrub_memory(pid_t pid, intptr_t start_address, size_t size) {
     }
 
     for (size_t i = 0; i < size; i++) {
-        intptr_t address = start_address + i;
+        intptr_t address = start_address + (intptr_t) i;
         proc_write_byte(pid, address, 0x00);
         if (error_occurred()) return;
     }

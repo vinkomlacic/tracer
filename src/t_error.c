@@ -11,7 +11,7 @@
 t_error_t t_error = {0, T_SUCCESS, "", ""};
 
 
-extern void t_perror() {
+extern void t_perror(void) {
     char error_message[MAX_MESSAGE_SIZE] = {0};
     t_strerror(t_error.code, MAX_MESSAGE_SIZE-1, error_message);
     ERROR("at line %d of %s => %s: %s", t_error.line, t_error.filename, error_message, t_error.message);
@@ -93,6 +93,10 @@ extern void t_strerror(t_errno_t const error_code, size_t const string_length, c
 
         case T_EADDRESS:
             strncpy(output, "invalid address provided", string_length);
+            break;
+
+        case T_EUNKNOWN_COLOR:
+            strncpy(output, "unknown color", string_length);
             break;
 
         case T_EUNEXPECTED_STOP:

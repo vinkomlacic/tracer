@@ -42,7 +42,7 @@ extern struct user_regs_struct get_regs(pid_t const pid) {
 }
 
 
-extern void set_regs(pid_t const pid, struct user_regs_struct * const regs) {
+extern void set_regs(pid_t const pid, struct user_regs_struct const * const regs) {
     if (ptrace(PTRACE_SETREGS, pid, NULL, regs) == -1) {
         raise(T_EPTRACE, "setting regs failed (pid: %d)", pid);
     }

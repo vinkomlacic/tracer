@@ -28,12 +28,10 @@ static void replace_entry_function(pid_t pid, intptr_t entry_function, intptr_t 
 static void detach_process(pstate_t const * pstate);
 
 
-int virus(int argument) {
-    return argument + 1;
-}
+int virus(int argument);
 
 
-int main(int const argc, char const * const argv[const]) {
+int main(int const argc, char * const argv[const]) {
     options_t options = {false, "", "", ""};
     parse_options(argc, argv, &options);
     check_for_error();
@@ -160,7 +158,7 @@ static intptr_t inject_virus(pstate_t * const pstate, intptr_t const function_ad
     check_for_error();
     INFO("Allocated %lu bytes of memory with %d alignment at %#lx", code_size, alignment, block_address);
 
-    call_mprotect(pstate, function_address[MPROTECT], block_address, getpagesize(), PROT_READ | PROT_WRITE | PROT_EXEC);
+    call_mprotect(pstate, function_address[MPROTECT], block_address, (size_t) alignment, PROT_READ | PROT_WRITE | PROT_EXEC);
     check_for_error();
     INFO("Set new permissions on the allocated block (rwx)");
 
@@ -184,13 +182,13 @@ static void cleanup(
         pstate_t * const pstate, intptr_t const function_address[const],
         intptr_t const virus_address, size_t const virus_size
 ) {
-    INFO("Scrubbing and cleaning up allocated memory at %#lx", virus_address, virus_size);
+    INFO("Scrubbing and cleaning up allocated memory at %#lx", virus_address);
 
     scrub_memory(pstate->pid, virus_address, virus_size);
     check_for_error();
     INFO("Memory block set to 0 (%lu bytes)", virus_size);
 
-    call_mprotect(pstate, function_address[MPROTECT], virus_address, getpagesize(), PROT_READ|PROT_WRITE);
+    call_mprotect(pstate, function_address[MPROTECT], virus_address, (size_t) getpagesize(), PROT_READ|PROT_WRITE);
     check_for_error();
     INFO("Block's permissions set to the original permissions of the heap (rw-)");
 
@@ -218,4 +216,9 @@ static void detach_process(pstate_t const *  const pstate) {
     pdetach(pstate->pid);
     check_for_error();
     INFO("Process %d detached\n", pstate->pid);
+}
+
+
+int virus(int argument) {
+    return argument + 1;
 }
