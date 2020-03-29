@@ -15,7 +15,7 @@ static void display_help(void);
 static bool validate_options(options_t const * options);
 
 /**
- * TODO: consider replacing getopt with argparse (getopt seems to simple)
+ * TODO: consider replacing getopt with argparse (getopt seems too simple)
  */
 extern void parse_options(int const argc, char const * const argv[const], options_t * options) {
     if (options == NULL) {
@@ -27,7 +27,7 @@ extern void parse_options(int const argc, char const * const argv[const], option
     int c = 0;
 
     while ((c = getopt(argc, (char * const *) argv, "cb:p:e:h")) != -1) {
-        TRACE("-%c option encountered with value %s", c, optarg == NULL ? "" : optarg);
+        DEBUG("-%c option encountered with value %s", c, optarg == NULL ? "" : optarg);
         switch (c) {
             case 'c':
                 options->clean = true;
@@ -50,11 +50,11 @@ extern void parse_options(int const argc, char const * const argv[const], option
                 break;
 
             case '?':
-                WARN("Option '-%c' is an unknown option or it requires an argument which was not provided", optopt);
                 if (optopt == 'c' || optopt == 'b' || optopt == 'p' || optopt == 'e' || optopt == 'h') {
                     raise(T_ECLI_EMPTY, "%c", optopt);
                     return;
                 }
+                WARN("Unknown option '-%c'", optopt);
 
             default:
                 ERROR("Unexpected exception while parsing command line. Aborting.");

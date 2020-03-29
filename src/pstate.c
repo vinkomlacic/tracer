@@ -33,12 +33,12 @@ extern void save_process_code(pstate_t * const pstate, intptr_t const start_addr
 
     if (pstate->changed_code_len == 0) pstate->change_address = start_address;
 
-    DEBUG("Copying %lu bytes of process code from %#lx", code_size, start_address);
     for (size_t i = 0; i < code_size; i++) {
         pstate->changed_code[pstate->changed_code_len] = proc_read_byte(pstate->pid, start_address + i);
         pstate->changed_code_len++;
         if (error_occurred()) return;
     }
+    DEBUG("Copied %lu bytes of process code from %#lx", code_size, start_address);
 }
 
 
@@ -48,17 +48,15 @@ extern void revert_to(pstate_t const * const pstate) {
         return;
     }
 
-    DEBUG("Restoring %lu bytes in code at %#lx", pstate->changed_code_len, pstate->change_address);
     for (size_t i = 0; i < pstate->changed_code_len; i++) {
         proc_write_byte(pstate->pid, pstate->change_address + i, pstate->changed_code[i]);
         if (error_occurred()) return;
     }
+    DEBUG("Restored %lu bytes in code at %#lx", pstate->changed_code_len, pstate->change_address);
 
-    DEBUG("Restoring old registers");
     set_regs(pstate->pid, (struct user_regs_struct * const) &pstate->changed_regs);
     if (error_occurred()) return;
-
-    DEBUG("%d process' state restored", pstate->pid);
+    DEBUG("Process registers restored");
 }
 
 

@@ -21,17 +21,17 @@ static void deallocate_stack_variable(pid_t pid);
 
 
 extern void wait_for_breakpoint(pid_t const pid) {
-    DEBUG("Waiting for breakpoint");
     int wstatus = 0;
     if (waitpid(pid, &wstatus, 0) == -1) {
         raise(T_EWAIT, "%d", pid);
+        return;
     }
 
     if (WSTOPSIG(wstatus) != SIGTRAP) {
-        // TODO put a detailed error code here
-        raise(T_ERROR, "process %d stopped unexpectedly", pid);
+        raise(T_EUNEXPECTED_STOP, "%d", pid);
+        return;
     }
-    DEBUG("Breakpoint caught");
+    DEBUG("SIGTRAP caught in %d", pid);
 }
 
 
@@ -44,17 +44,11 @@ extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int
     intptr_t address = get_address_after_changes(pstate);
     inject_indirect_call_at(pstate, address, virus_address);
     if (error_occurred()) return -1;
-
-#ifdef DEBUG_ENABLE
-    uint8_t bytes[4] = {0};
-    for (int i = 0; i < 4; i++) {
-        bytes[i] = proc_read_byte(pstate->pid, pstate->change_address + i);
-    }
-    DEBUG("======== Changed memory = %#x %#x %#x %#x", bytes[0], bytes[1], bytes[2], bytes[3]);
-#endif
+    DEBUG("Indirect call to %#lx injected at %#lx", virus_address, address);
 
     execute_injections(pstate->pid);
     if (error_occurred()) return -1;
+    DEBUG("Injected virus code executed");
 
     return (int) get_return_value(pstate->pid);
 }
@@ -68,13 +62,14 @@ static void set_arguments(pid_t const pid, size_t const argc, unsigned long long
     struct user_regs_struct regs = get_regs(pid);
     if (error_occurred()) return;
     if (argc > 6 || argc == 0) {
-        // TODO add detailed error code
-        raise(T_ERROR, "argc not in [1, 6]: %lu", argc);
+        raise(T_EARG_INVAL, "argc not in [1, 6]: %lu", argc);
+        return;
     }
 
     unsigned long long int * const arg_regs[] = {&regs.rdi, &regs.rsi, &regs.rdx, &regs.rcx, &regs.r8, &regs.r9};
     for (size_t i = 0; i < argc; i++) {
         *arg_regs[i] = argv[i];
+        TRACE("Argument set for function call:  [#%lu] = %llu", i, argv[i]);
     }
 
     set_regs(pid, &regs);
@@ -82,9 +77,9 @@ static void set_arguments(pid_t const pid, size_t const argc, unsigned long long
 
 
 static void execute_injections(pid_t const pid) {
-    DEBUG("Executing injected code");
     pcontinue(pid);
     if (error_occurred()) return;
+    TRACE("SIGCONT sent to %d", pid);
 
     wait_for_breakpoint(pid);
 }
@@ -104,6 +99,7 @@ extern intptr_t call_posix_memalign(
 ) {
     intptr_t stack_variable = allocate_stack_variable(pstate->pid);
     if (error_occurred()) return -1;
+    DEBUG("Stack variable allocated, address: %#lx", stack_variable);
 
     unsigned long long int const argv[] = {stack_variable, alignment, size};
     size_t const argc = 3;
@@ -112,33 +108,27 @@ extern intptr_t call_posix_memalign(
     intptr_t address = get_address_after_changes(pstate);
     inject_indirect_call_at(pstate, address, posix_memalign_address);
     if (error_occurred()) return -1;
-
-#ifdef DEBUG_ENABLE
-    uint8_t bytes[4] = {0};
-    for (int i = 0; i < 4; i++) {
-        bytes[i] = proc_read_byte(pstate->pid, pstate->change_address + i);
-    }
-    DEBUG("======== Changed memory = %#x %#x %#x %#x", bytes[0], bytes[1], bytes[2], bytes[3]);
-#endif
+    DEBUG("Injected indirect call to %#lx at %#lx", posix_memalign_address, address);
 
     execute_injections(pstate->pid);
     if (error_occurred()) return -1;
 
     int return_value = (int) get_return_value(pstate->pid);
     if (return_value != 0) {
-        // TODO place more detailed error
-        raise(T_ERROR, "function call unsuccessful (returned %d)", return_value);
+        raise(T_ECALL_FAIL, "posix_memalign returned %d", return_value);
         return -1;
     }
     DEBUG("Function posix_memalign returned successfully");
 
-    intptr_t ret_value = proc_read_word(pstate->pid, stack_variable);
+    intptr_t block_address = proc_read_word(pstate->pid, stack_variable);
     if (error_occurred()) return -1;
+    DEBUG("Allocated block address retrieved from local variable: %#lx", block_address);
 
-    DEBUG("Restoring stack");
     deallocate_stack_variable(pstate->pid);
+    if (error_occurred()) return -1;
+    DEBUG("Local variable deallocated and stack restored");
 
-    return ret_value;
+    return block_address;
 }
 
 
@@ -147,6 +137,7 @@ static intptr_t allocate_stack_variable(pid_t const pid) {
     if (error_occurred()) return -1;
 
     regs.rsp -= 8ULL;
+    TRACE("%%rsp decremented by 8, new value: %#llx", regs.rsp);
 
     set_regs(pid, &regs);
     if (error_occurred()) return -1;
@@ -160,6 +151,7 @@ static void deallocate_stack_variable(pid_t const pid) {
     if (error_occurred()) return;
 
     regs.rsp += 8ULL;
+    TRACE("%%rsp incremented by 8, new value: %#llx", regs.rsp);
 
     set_regs(pid, &regs);
 }
@@ -177,23 +169,16 @@ extern void call_mprotect(
     intptr_t address = get_address_after_changes(pstate);
     inject_indirect_call_at(pstate, address, mprotect_address);
     if (error_occurred()) return;
-
-#ifdef DEBUG_ENABLE
-        uint8_t bytes[4] = {0};
-    for (int i = 0; i < 4; i++) {
-        bytes[i] = proc_read_byte(pstate->pid, pstate->change_address + i);
-    }
-    DEBUG("======== Changed memory = %#x %#x %#x %#x", bytes[0], bytes[1], bytes[2], bytes[3]);
-#endif
+    DEBUG("Injected indirect call to %#lx at %#lx", mprotect_address, address);
 
     execute_injections(pstate->pid);
     if (error_occurred()) return;
 
     int return_value = (int) get_return_value(pstate->pid);
-    DEBUG("Return value = %d", return_value);
+    if (error_occurred()) return;
+
     if (return_value != 0) {
-        // TODO put detailed error code
-        raise(T_ERROR, "calling mprotect failed (returned %d)", return_value);
+        raise(T_ECALL_FAIL, "mprotect returned %d", return_value);
         return;
     }
     DEBUG("mprotect returned successfully");
@@ -209,14 +194,9 @@ extern void call_free(pstate_t * const pstate, intptr_t const free_address, intp
     intptr_t const indirect_call_address = get_address_after_changes(pstate);
     inject_indirect_call_at(pstate, indirect_call_address, free_address);
     if (error_occurred()) return;
-
-#ifdef DEBUG_ENABLE
-        uint8_t bytes[4] = {0};
-    for (int i = 0; i < 4; i++) {
-        bytes[i] = proc_read_byte(pstate->pid, pstate->change_address + i);
-    }
-    DEBUG("======== Changed memory = %#x %#x %#x %#x", bytes[0], bytes[1], bytes[2], bytes[3]);
-#endif
+    DEBUG("Injected indirect call to %#lx at %#lx", free_address, address);
 
     execute_injections(pstate->pid);
+    if (error_occurred()) return;
+    DEBUG("free returned successfully");
 }

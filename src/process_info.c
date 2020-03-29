@@ -20,9 +20,12 @@ extern intptr_t get_process_base_address(pid_t const pid) {
         raise(T_EPRINTF, "snprintf failed");
         return 0;
     }
-    DEBUG("Getting process base address => %s", command);
 
-    return pread_word(command);
+    intptr_t const base_address = pread_word(command);
+    if (error_occurred()) return 0;
+    DEBUG("Process %d base address: %#lx", pid, base_address);
+
+    return base_address;
 }
 
 
@@ -40,9 +43,11 @@ extern intptr_t get_symbol_offset_in_binary(char const binary_path[const], char 
         raise(T_EPRINTF, "snprintf failed");
         return 0;
     }
-    DEBUG("Getting symbol offset => %s", command);
 
-    return pread_word(command);
+    intptr_t const offset = pread_word(command);
+    if (error_occurred()) return 0;
+
+    return offset;
 }
 
 
@@ -54,9 +59,11 @@ extern intptr_t locate_libc_in(pid_t const pid) {
         raise(T_EPRINTF, "snprintf failed");
         return 0;
     }
-    DEBUG("Getting libc base address => %s", command);
 
-    return pread_word(command);
+    intptr_t const libc_address = pread_word(command);
+    if (error_occurred()) return 0;
+
+    return libc_address;
 }
 
 
@@ -68,10 +75,8 @@ extern void get_libc_path(char const binary_path[const], char path[const]) {
         raise(T_EPRINTF, "snprintf failed");
         return;
     }
-    DEBUG("Getting libc path => %s", command);
 
     pread_raw_line(command, path);
-    path[strlen(path) - 1] = '\0'; // deletes the newline at the end
 }
 
 
@@ -93,7 +98,7 @@ extern size_t get_function_code(pid_t const pid, intptr_t const start_address, u
             return 0;
         }
     }
-    DEBUG("Read %d bytes from %d", i, pid);
+    DEBUG("Read %lu bytes from %d", i, pid);
 
     return i;
 }
@@ -102,7 +107,6 @@ extern size_t get_function_code(pid_t const pid, intptr_t const start_address, u
 extern pid_t get_pid(char const process_name[const]) {
     char command[PATH_MAX] = {0};
 
-    DEBUG("Getting PID => pgrep %s", process_name);
     int printed_characters = snprintf(command, PATH_MAX, "pgrep %s", process_name);
     if (printed_characters < 0) {
         raise(T_EPRINTF, "snprintf failed");

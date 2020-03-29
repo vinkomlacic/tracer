@@ -95,6 +95,18 @@ extern void t_strerror(t_errno_t const error_code, size_t const string_length, c
             strncpy(output, "invalid address provided", string_length);
             break;
 
+        case T_EUNEXPECTED_STOP:
+            strncpy(output, "process stopped unexpectedly", string_length);
+            break;
+
+        case T_EARG_INVAL:
+            strncpy(output, "argument invalid", string_length);
+            break;
+
+        case T_ECALL_FAIL:
+            strncpy(output, "function call in tracee failed", string_length);
+            break;
+
         case T_ERROR:
         default:
             strncpy(output, "unrecognized error", string_length);

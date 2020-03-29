@@ -46,4 +46,7 @@ typedef enum {
   T_EPSTATE_INVALID = -23,        // pstate struct is in illegal state
   T_EADDRESS = -24,               // address is invalid
   T_EUNKNOWN_COLOR = -25,         // unknown color
+  T_EUNEXPECTED_STOP = -26,       // process stopped unexpectedly
+  T_EARG_INVAL = -27,             // invalid argument
+  T_ECALL_FAIL = -28,             // function call in tracee failed
 } t_errno_t;

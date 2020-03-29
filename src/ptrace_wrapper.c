@@ -14,22 +14,21 @@ extern void pattach(pid_t const pid) {
         raise(T_EPTRACE, "attaching %d", pid);
         return;
     }
+    TRACE("PTRACE_ATTACH executed. Waiting for stop signal.");
 
-
-    DEBUG("PTRACE_ATTACH executed. Waiting for stop signal.");
     if (waitpid(pid, NULL, WSTOPPED) == -1) {
         raise(T_EWAIT, "%d", pid);
     }
-    DEBUG("Tracee process stopped. Tracee is attached.");
+    TRACE("Tracee process stopped. Tracee is attached.");
 }
 
 
 extern void pcontinue(pid_t const pid) {
-    DEBUG("rip: %#llx", get_regs(pid).rip);
+    TRACE("rip: %#llx", get_regs(pid).rip);
     if (ptrace(PTRACE_CONT, pid, 0, SIGCONT) == -1) {
         raise(T_EPTRACE, "sending SIGCONT to %d", pid);
     }
-    DEBUG("SIGCONT sent");
+    TRACE("SIGCONT sent");
 }
 
 
@@ -51,9 +50,9 @@ extern void set_regs(pid_t const pid, struct user_regs_struct * const regs) {
 
 
 extern void pdetach(pid_t const pid) {
-    DEBUG("rip: %#llx", get_regs(pid).rip);
+    TRACE("rip: %#llx", get_regs(pid).rip);
     if (ptrace(PTRACE_DETACH, pid, 0, 0) == -1) {
         raise(T_EPTRACE, "detaching %d", pid);
     }
-    DEBUG("Process %d detached", pid);
+    TRACE("Process %d detached", pid);
 }

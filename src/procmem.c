@@ -37,7 +37,7 @@ extern uint8_t proc_read_byte(pid_t const pid, intptr_t const address) {
 
     procmem_close(fd);
     if (error_occurred()) return 0;
-    TRACE("Read %#x from process %d at %#lx", result, pid, address);
+    TRACE("Read %d at %#lx: %#x", pid, address, result);
 
     return result;
 }
@@ -56,7 +56,7 @@ static int procmem_open_at(pid_t const pid, intptr_t const address, int const mo
         raise(T_EOPEN, "can't open %s", memory_path);
         return 0;
     }
-    TRACE("Opening process file success");
+    TRACE("Opening process file success: %d", fd);
 
 
     if (lseek(fd, address, SEEK_SET) == -1) {
@@ -83,41 +83,23 @@ static void procmem_close(int const fd) {
     if (close(fd) == -1) {
         raise(T_ECLOSE, "error closing process memory (fd == %d)", fd);
     }
+    TRACE("%d successfully closed", fd);
 }
 
 
 extern intptr_t proc_read_word(pid_t const pid, intptr_t const address) {
-    char memory_path[MEMORY_PATH_MAX] = {0};
-    construct_memory_path(memory_path, pid);
-    TRACE("Memory path constructed: %s", memory_path);
-    if (error_occurred()) {
-        return 0;
-    }
-
-    int const fd = open(memory_path, O_RDONLY);
-    if (fd == -1) {
-        raise(T_EOPEN, "error opening %s", memory_path);
-        return 0;
-    }
-    TRACE("Opening process file success");
-
-
-    if (lseek(fd, address, SEEK_SET) == -1) {
-        raise(T_EREAD, "error seeking %s to %#lx", memory_path, address);
-        return 0;
-    }
+    int const fd = procmem_open_at(pid, address, O_RDONLY);
+    if (error_occurred()) return 0;
 
     intptr_t result = 0;
     if (read(fd, &result, sizeof(result)) == -1) {
-        raise(T_EREAD, "error reading %s at %#lx", memory_path, address);
+        raise(T_EREAD, "error reading %d at %#lx", pid, address);
         return 0;
     }
 
-    if (close(fd) == -1) {
-        raise(T_ECLOSE, "error closing %s", memory_path);
-        return 0;
-    }
-    TRACE("Read %#lx from process %d at %#lx", result, pid, address);
+    procmem_close(fd);
+    if (error_occurred()) return 0;
+    TRACE("Read %d at %#lx: %#lx", pid, address, result);
 
     return result;
 }
@@ -134,7 +116,7 @@ extern void proc_write_byte(pid_t const pid, intptr_t const address, uint8_t con
 
     procmem_close(fd);
     if (error_occurred()) return;
-    TRACE("Successfully written %#x to %d at %#lx", value, pid, address);
+    TRACE("Write %d at %#lx: %#x", pid, address, value);
 }
 
 
@@ -149,5 +131,5 @@ extern void proc_write_word(pid_t const pid, intptr_t const address, intptr_t co
 
     procmem_close(fd);
     if(error_occurred()) return;
-    TRACE("Successfully written %#x to %d at %#lx", word, pid, address);
+    TRACE("Write %d at %#lx: %#lx", pid, address, word);
 }
