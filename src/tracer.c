@@ -27,6 +27,11 @@ static void restore_process_state(pstate_t const * pstate);
 static void replace_entry_function(pid_t pid, intptr_t entry_function, intptr_t virus_address);
 static void detach_process(pstate_t const * pstate);
 
+
+/**
+ * Instrumentation functions will not be linked in the tracee where the virus is copied
+ * which will segfault tracee. That is why it's best to turn off sanitizers for this function.
+ */
 __attribute__ ((no_sanitize("address", "undefined")))
 int virus(int argument);
 
@@ -219,6 +224,6 @@ static void detach_process(pstate_t const *  const pstate) {
 }
 
 
-int virus(int argument) {
+int virus(int const argument) {
     return argument + 1;
 }

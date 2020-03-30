@@ -72,7 +72,7 @@
     Suggestion: color code various outputs and style filenames and line numbers. 
     
 ## 7. Warnings
-### Clean up warnings
+### ~~Clean up warnings~~
 *   It is important to resolve all of the warnings that are specified in the warnings file provided.
     Either correct them or suppress if they are actually a false positive.
 *   This should be done on both Clang and GCC compilers to cover more cases.
@@ -83,9 +83,9 @@
 *   After this write the test cases in C code.
 
 ## 9. Run dynamic analysis
-*   ASAN
+*   ~~ASAN~~
 *   MSAN (Clang only)
-*   UbSAN
+*   ~~UbSAN~~
  
 ## 10. Documentation
 *   Write API instructions and add comments to clarify actions where necessary
