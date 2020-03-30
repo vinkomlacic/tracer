@@ -27,3 +27,9 @@ extern void proc_write_byte(pid_t pid, intptr_t address, uint8_t value);
 
 
 extern void proc_write_word(pid_t pid, intptr_t address, intptr_t word);
+
+
+extern void proc_read_block(pid_t pid, intptr_t start_address, size_t block_size, uint8_t output[static 1]);
+
+
+extern void proc_write_block(pid_t pid, intptr_t start_address, size_t block_size, uint8_t const code[static 1]);

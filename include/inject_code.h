@@ -13,16 +13,6 @@ extern void inject_breakpoint(pstate_t *pstate, intptr_t address);
 
 
 /**
- * Injects code_size bytes into a running process with specified pid at the specified address.
- *
- * Precondition: address must not be zero.
- *
- * If address is zero T_EADDRESS is raised.
- */
-extern void inject_raw_code_to_process(pid_t pid, intptr_t address, size_t code_size, uint8_t const code[static 1]);
-
-
-/**
  * Sets up an indirect call in a running process. Changes the code and sets up the rax register.
  *
  * Precondition: address and function_address must not be zero.

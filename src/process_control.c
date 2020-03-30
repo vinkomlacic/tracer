@@ -37,7 +37,7 @@ extern void wait_for_breakpoint(pid_t const pid) {
 
 extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int const arg) {
     unsigned long long int const argv[] = {(unsigned long long int) arg};
-    size_t const argc = 3;
+    size_t const argc = 1;
     set_arguments(pstate->pid, argc, argv);
     if (error_occurred()) return -1;
 

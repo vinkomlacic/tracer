@@ -26,18 +26,27 @@ static void procmem_close(int fd);
 
 
 extern uint8_t proc_read_byte(pid_t const pid, intptr_t const address) {
+    uint8_t block[1] = {0};
+    proc_read_block(pid, address, sizeof(uint8_t), block);
+    if (error_occurred()) return 0;
+
+    return *block;
+}
+
+
+extern intptr_t proc_read_word(pid_t const pid, intptr_t const address) {
     int const fd = procmem_open_at(pid, address, O_RDONLY);
     if (error_occurred()) return 0;
 
-    uint8_t result = 0;
+    intptr_t result = 0;
     if (read(fd, &result, sizeof(result)) == -1) {
-        raise(T_EREAD, "error reading process %d memory at %#lx", pid, address);
+        raise(T_EREAD, "error reading %d at %#lx", pid, address);
         return 0;
     }
 
     procmem_close(fd);
     if (error_occurred()) return 0;
-    TRACE("Read %d at %#lx: %#x", pid, address, result);
+    TRACE("Read %d at %#lx: %#lx", pid, address, result);
 
     return result;
 }
@@ -46,7 +55,6 @@ extern uint8_t proc_read_byte(pid_t const pid, intptr_t const address) {
 static int procmem_open_at(pid_t const pid, intptr_t const address, int const mode) {
     char memory_path[MEMORY_PATH_MAX] = {0};
     construct_memory_path(memory_path, pid);
-    TRACE("Memory path constructed: %s", memory_path);
     if (error_occurred()) {
         return 0;
     }
@@ -87,36 +95,9 @@ static void procmem_close(int const fd) {
 }
 
 
-extern intptr_t proc_read_word(pid_t const pid, intptr_t const address) {
-    int const fd = procmem_open_at(pid, address, O_RDONLY);
-    if (error_occurred()) return 0;
-
-    intptr_t result = 0;
-    if (read(fd, &result, sizeof(result)) == -1) {
-        raise(T_EREAD, "error reading %d at %#lx", pid, address);
-        return 0;
-    }
-
-    procmem_close(fd);
-    if (error_occurred()) return 0;
-    TRACE("Read %d at %#lx: %#lx", pid, address, result);
-
-    return result;
-}
-
-
 extern void proc_write_byte(pid_t const pid, intptr_t const address, uint8_t const value) {
-    int const fd = procmem_open_at(pid, address, O_WRONLY);
-    if (error_occurred()) return;
-
-    if (write(fd, &value, sizeof(value)) == -1) {
-        raise(T_EWRITE, "error writing to process %d at %#lx", pid, address);
-        return;
-    }
-
-    procmem_close(fd);
-    if (error_occurred()) return;
-    TRACE("Write %d at %#lx: %#x", pid, address, value);
+    uint8_t const block[] = {value};
+    proc_write_block(pid, address, sizeof(block), block);
 }
 
 
@@ -132,4 +113,47 @@ extern void proc_write_word(pid_t const pid, intptr_t const address, intptr_t co
     procmem_close(fd);
     if(error_occurred()) return;
     TRACE("Write %d at %#lx: %#lx", pid, address, word);
+}
+
+
+extern void proc_read_block(
+        pid_t const pid, intptr_t const start_address,
+        size_t const block_size, uint8_t output[const static 1]
+) {
+    if (start_address == 0) {
+        raise(T_EADDRESS, "start_address");
+        return;
+    }
+
+    int const fd = procmem_open_at(pid, start_address, O_RDONLY);
+    if (error_occurred()) return;
+
+    if (read(fd, output, block_size) == -1) {
+        raise(T_EREAD, "error reading process %d memory at %#lx", pid, start_address);
+        return;
+    }
+
+    procmem_close(fd);
+    if (error_occurred()) return;
+    TRACE("Read %lu bytes at %#lx", block_size, start_address);
+}
+
+
+extern void proc_write_block(pid_t const pid, intptr_t const start_address, size_t const block_size, uint8_t const code[const static 1]) {
+    if (start_address == 0) {
+        raise(T_EADDRESS, "start_address");
+        return;
+    }
+
+    int const fd = procmem_open_at(pid, start_address, O_WRONLY);
+    if (error_occurred()) return;
+
+    if (write(fd, code, block_size) == -1) {
+        raise(T_EWRITE, "error writing to process %d at %#lx", pid, start_address);
+        return;
+    }
+
+    procmem_close(fd);
+    if (error_occurred()) return;
+    TRACE("Read %lu bytes at %#lx", block_size, start_address);
 }

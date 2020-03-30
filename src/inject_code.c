@@ -14,23 +14,8 @@ extern void inject_breakpoint(pstate_t * const pstate, intptr_t const address) {
     if (error_occurred()) return;
     DEBUG("Saved original %lu bytes to pstate", sizeof(interrupt));
 
-    inject_raw_code_to_process(pstate->pid, address, sizeof(interrupt), interrupt);
+    proc_write_block(pstate->pid, address, sizeof(interrupt), interrupt);
     DEBUG("Breakpoint injected at %#lx", address);
-}
-
-
-extern void inject_raw_code_to_process(pid_t const pid, intptr_t const address, size_t const code_size, uint8_t const code[static 1]) {
-    if (address == 0) {
-        raise(T_EADDRESS, "address is 0");
-        return;
-    }
-
-    for (size_t i = 0; i < code_size; i++) {
-        intptr_t current_address = address + (intptr_t) i;
-        proc_write_byte(pid, current_address, code[i]);
-        if (error_occurred()) return;
-    }
-    DEBUG("Injected code (%lu bytes) at %#lx", code_size, address);
 }
 
 
@@ -57,7 +42,7 @@ extern void inject_indirect_call_at(pstate_t * const pstate, intptr_t const addr
     if (error_occurred()) return;
     DEBUG("Saved original %lu bytes to pstate", sizeof(indirect_call));
 
-    inject_raw_code_to_process(pstate->pid, address, sizeof(indirect_call), indirect_call);
+    proc_write_block(pstate->pid, address, sizeof(indirect_call), indirect_call);
     if (error_occurred()) return;
     DEBUG("Code injected to process %d", pstate->pid);
 }
@@ -68,7 +53,7 @@ extern void inject_trampoline(pid_t const pid, intptr_t const address, intptr_t 
     uint8_t const end_instruction[] = {0xFF, 0xE0, 0xC3};
 
     intptr_t current_address = address;
-    inject_raw_code_to_process(pid, current_address, sizeof(jump_instruction), jump_instruction);
+    proc_write_block(pid, current_address, sizeof(jump_instruction), jump_instruction);
     current_address += (intptr_t) sizeof(jump_instruction);
     if (error_occurred()) return;
 
@@ -77,7 +62,7 @@ extern void inject_trampoline(pid_t const pid, intptr_t const address, intptr_t 
     if (error_occurred()) return;
     DEBUG("Injected jump instruction to %#lx at %#lx", function_address, address);
 
-    inject_raw_code_to_process(pid, current_address, sizeof(end_instruction), end_instruction);
+    proc_write_block(pid, current_address, sizeof(end_instruction), end_instruction);
     if (error_occurred()) return;
     DEBUG("Injected end instruction at %#lx", current_address);
 }
