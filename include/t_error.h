@@ -8,7 +8,7 @@
 #include "t_error_t.h"
 
 
-#define raise(ERROR_CODE, ...) t_error.code = ERROR_CODE; \
+#define RAISE(ERROR_CODE, ...) t_error.code = ERROR_CODE; \
     t_error.line = __LINE__; t_error.filename = __BASE_FILE__; \
     snprintf(t_error.message, MAX_MESSAGE_SIZE, __VA_ARGS__)
 

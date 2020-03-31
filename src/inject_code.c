@@ -21,10 +21,10 @@ extern void inject_breakpoint(pstate_t * const pstate, intptr_t const address) {
 
 extern void inject_indirect_call_at(pstate_t * const pstate, intptr_t const address, intptr_t const function_address) {
     if (address == 0) {
-        raise(T_EADDRESS, "address argument is 0");
+        RAISE(T_EADDRESS, "address argument is 0");
         return;
     } else if (function_address == 0) {
-        raise(T_EADDRESS, "function_address argument is 0");
+        RAISE(T_EADDRESS, "function_address argument is 0");
         return;
     }
 
@@ -70,7 +70,7 @@ extern void inject_trampoline(pid_t const pid, intptr_t const address, intptr_t 
 
 extern void scrub_memory(pid_t pid, intptr_t start_address, size_t size) {
     if (start_address == 0) {
-        raise(T_EADDRESS, "start_address is zero");
+        RAISE(T_EADDRESS, "start_address is zero");
         return;
     }
 

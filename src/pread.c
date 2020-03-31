@@ -41,18 +41,18 @@ extern int pread_int(char const command[const]) {
 extern void pread_raw_line(char const command[const], char output[static BUFFER_LENGTH]) {
     FILE *pipe = popen(command, "r");
     if (pipe == NULL) {
-        raise(T_EPOPEN, "%s", command);
+        RAISE(T_EPOPEN, "%s", command);
         return;
     }
 
     if (fgets(output, BUFFER_LENGTH, pipe) == NULL) {
-        raise(T_EFGETS, "%s", command);
+        RAISE(T_EFGETS, "%s", command);
         return;
     }
     output[strlen(output) - 1] = '\0'; // remove newline
 
     if (pclose(pipe) == -1) {
-        raise(T_EPCLOSE, "%s", command);
+        RAISE(T_EPCLOSE, "%s", command);
     }
 
     TRACE("Called: %s", command);
@@ -73,7 +73,7 @@ static void pread_item(char const command[const], char const format[const], ...)
     // Warning is disabled because the format is checked when passed to this function
     if (sscanf(buffer, format, va_arg(arguments, void const *)) != 1) {
 #pragma GCC diagnostic pop
-        raise(T_EPREAD, "format %s", format);
+        RAISE(T_EPREAD, "format %s", format);
         return;
     }
     va_end(arguments);

@@ -17,7 +17,7 @@ extern void reset_console_color(void) {
 
 extern void set_console_color_os(FILE * const file, ansi_color_t const color, bool const bold) {
     if (file == NULL) {
-        raise(T_ENULL_ARG, "file");
+        RAISE(T_ENULL_ARG, "file");
         return;
     }
 
@@ -52,7 +52,7 @@ extern void set_console_color_os(FILE * const file, ansi_color_t const color, bo
 
 extern void reset_console_color_os(FILE * const file) {
     if (file == NULL) {
-        raise(T_ENULL_ARG, "file");
+        RAISE(T_ENULL_ARG, "file");
         return;
     }
 

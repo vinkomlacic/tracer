@@ -23,5 +23,9 @@ int main(void) {
 
     size_t padding = size - sum;
 
-    printf("Try adding %lu bytes to the last member\n", padding);
+    if (padding != 0) {
+        printf("Try adding %lu bytes to the last member\n", padding);
+    } else {
+        printf("No padding\n");
+    }
 }

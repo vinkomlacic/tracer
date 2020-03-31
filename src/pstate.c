@@ -11,7 +11,7 @@
 
 extern void save_process_regs(pstate_t * const pstate) {
     if (pstate == NULL) {
-        raise(T_EPSTATE_INVALID, "pstate is null");
+        RAISE(T_EPSTATE_INVALID, "pstate is null");
         return;
     }
 
@@ -23,10 +23,10 @@ extern void save_process_regs(pstate_t * const pstate) {
 
 extern void save_process_code(pstate_t * const pstate, intptr_t const start_address, size_t const code_size) {
     if (pstate == NULL) {
-        raise(T_EPSTATE_INVALID, "pstate is null");
+        RAISE(T_EPSTATE_INVALID, "pstate is null");
         return;
     } else if (start_address == 0) {
-        raise(T_EADDRESS, "%#lx", start_address);
+        RAISE(T_EADDRESS, "%#lx", start_address);
         return;
     }
 
@@ -39,7 +39,7 @@ extern void save_process_code(pstate_t * const pstate, intptr_t const start_addr
 
 extern void revert_to(pstate_t const * const pstate) {
     if (pstate == NULL) {
-        raise(T_EPSTATE_INVALID, "pstate is null");
+        RAISE(T_EPSTATE_INVALID, "pstate is null");
         return;
     }
 
@@ -57,7 +57,7 @@ extern void revert_to(pstate_t const * const pstate) {
 
 extern intptr_t get_address_after_changes(pstate_t const * const pstate) {
     if (pstate == NULL) {
-        raise(T_EPSTATE_INVALID, "pstate is null");
+        RAISE(T_EPSTATE_INVALID, "pstate is null");
         return 0;
     }
 

@@ -23,12 +23,12 @@ static void deallocate_stack_variable(pid_t pid);
 extern void wait_for_breakpoint(pid_t const pid) {
     int wstatus = 0;
     if (waitpid(pid, &wstatus, 0) == -1) {
-        raise(T_EWAIT, "%d", pid);
+        RAISE(T_EWAIT, "%d", pid);
         return;
     }
 
     if (WSTOPSIG(wstatus) != SIGTRAP) {
-        raise(T_EUNEXPECTED_STOP, "%d", pid);
+        RAISE(T_EUNEXPECTED_STOP, "%d", pid);
         return;
     }
     DEBUG("SIGTRAP caught in %d", pid);
@@ -62,7 +62,7 @@ static void set_arguments(pid_t const pid, size_t const argc, unsigned long long
     struct user_regs_struct regs = get_regs(pid);
     if (error_occurred()) return;
     if (argc > 6 || argc == 0) {
-        raise(T_EARG_INVAL, "argc not in [1, 6]: %lu", argc);
+        RAISE(T_EARG_INVAL, "argc not in [1, 6]: %lu", argc);
         return;
     }
 
@@ -115,7 +115,7 @@ extern intptr_t call_posix_memalign(
 
     int return_value = (int) get_return_value(pstate->pid);
     if (return_value != 0) {
-        raise(T_ECALL_FAIL, "posix_memalign returned %d", return_value);
+        RAISE(T_ECALL_FAIL, "posix_memalign returned %d", return_value);
         return -1;
     }
     DEBUG("Function posix_memalign returned successfully");
@@ -178,7 +178,7 @@ extern void call_mprotect(
     if (error_occurred()) return;
 
     if (return_value != 0) {
-        raise(T_ECALL_FAIL, "mprotect returned %d", return_value);
+        RAISE(T_ECALL_FAIL, "mprotect returned %d", return_value);
         return;
     }
     DEBUG("mprotect returned successfully");

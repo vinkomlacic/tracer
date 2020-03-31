@@ -40,7 +40,7 @@ extern intptr_t proc_read_word(pid_t const pid, intptr_t const address) {
 
     intptr_t result = 0;
     if (read(fd, &result, sizeof(result)) == -1) {
-        raise(T_EREAD, "error reading %d at %#lx", pid, address);
+        RAISE(T_EREAD, "error reading %d at %#lx", pid, address);
         return 0;
     }
 
@@ -61,14 +61,14 @@ static int procmem_open_at(pid_t const pid, intptr_t const address, int const mo
 
     int const fd = open(memory_path, mode);
     if (fd == -1) {
-        raise(T_EOPEN, "can't open %s", memory_path);
+        RAISE(T_EOPEN, "can't open %s", memory_path);
         return 0;
     }
     TRACE("Opening process file success: %d", fd);
 
 
     if (lseek(fd, address, SEEK_SET) == -1) {
-        raise(T_EREAD, "error seeking %s to %#lx", memory_path, address);
+        RAISE(T_EREAD, "error seeking %s to %#lx", memory_path, address);
         return 0;
     }
 
@@ -80,16 +80,16 @@ static void construct_memory_path(char memory_path[const static MEMORY_PATH_MAX]
     int const copied_characters = snprintf(memory_path, MEMORY_PATH_MAX, MEMORY_PATH_FORMAT, pid);
 
     if (copied_characters < 0) {
-        raise(T_EENCODING, "snprintf failed");
+        RAISE(T_EENCODING, "snprintf failed");
     } else if (copied_characters > (MEMORY_PATH_MAX-1)) {
-        raise(T_ESTR_TRUNC, "snprintf truncated %d bytes", (copied_characters - MEMORY_PATH_MAX));
+        RAISE(T_ESTR_TRUNC, "snprintf truncated %d bytes", (copied_characters - MEMORY_PATH_MAX));
     }
 }
 
 
 static void procmem_close(int const fd) {
     if (close(fd) == -1) {
-        raise(T_ECLOSE, "error closing process memory (fd == %d)", fd);
+        RAISE(T_ECLOSE, "error closing process memory (fd == %d)", fd);
     }
     TRACE("%d successfully closed", fd);
 }
@@ -106,7 +106,7 @@ extern void proc_write_word(pid_t const pid, intptr_t const address, intptr_t co
     if (error_occurred()) return;
 
     if (write(fd, &word, sizeof(word)) == -1) {
-        raise(T_EWRITE, "error writing to process %d at %#lx", pid, address);
+        RAISE(T_EWRITE, "error writing to process %d at %#lx", pid, address);
         return;
     }
 
@@ -121,7 +121,7 @@ extern void proc_read_block(
         size_t const block_size, uint8_t output[const static 1]
 ) {
     if (start_address == 0) {
-        raise(T_EADDRESS, "start_address");
+        RAISE(T_EADDRESS, "start_address");
         return;
     }
 
@@ -129,7 +129,7 @@ extern void proc_read_block(
     if (error_occurred()) return;
 
     if (read(fd, output, block_size) == -1) {
-        raise(T_EREAD, "error reading process %d memory at %#lx", pid, start_address);
+        RAISE(T_EREAD, "error reading process %d memory at %#lx", pid, start_address);
         return;
     }
 
@@ -141,7 +141,7 @@ extern void proc_read_block(
 
 extern void proc_write_block(pid_t const pid, intptr_t const start_address, size_t const block_size, uint8_t const code[const static 1]) {
     if (start_address == 0) {
-        raise(T_EADDRESS, "start_address");
+        RAISE(T_EADDRESS, "start_address");
         return;
     }
 
@@ -149,7 +149,7 @@ extern void proc_write_block(pid_t const pid, intptr_t const start_address, size
     if (error_occurred()) return;
 
     if (write(fd, code, block_size) == -1) {
-        raise(T_EWRITE, "error writing to process %d at %#lx", pid, start_address);
+        RAISE(T_EWRITE, "error writing to process %d at %#lx", pid, start_address);
         return;
     }
 

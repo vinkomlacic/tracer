@@ -17,7 +17,7 @@ extern intptr_t get_process_base_address(pid_t const pid) {
 
     int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*`pgrep -n %d`", pid, pid);
     if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
+        RAISE(T_EPRINTF, "snprintf failed");
         return 0;
     }
 
@@ -40,7 +40,7 @@ extern intptr_t get_symbol_offset_in_binary(char const binary_path[const], char 
     }
 
     if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
+        RAISE(T_EPRINTF, "snprintf failed");
         return 0;
     }
 
@@ -56,7 +56,7 @@ extern intptr_t locate_libc_in(pid_t const pid) {
 
     int printed_characters = snprintf(command, PATH_MAX, "cat /proc/%d/maps | grep r.*%s", pid, LIBC_NAME);
     if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
+        RAISE(T_EPRINTF, "snprintf failed");
         return 0;
     }
 
@@ -72,7 +72,7 @@ extern void get_libc_path(char const binary_path[const], char path[const]) {
 
     int printed_characters = snprintf(command, PATH_MAX, "ldd %s | grep -o -e \"/.*%s.* \"", binary_path, LIBC_NAME);
     if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
+        RAISE(T_EPRINTF, "snprintf failed");
         return;
     }
 
@@ -94,7 +94,7 @@ extern size_t get_function_code(pid_t const pid, intptr_t const start_address, u
             break;
         }
         if ((i + 1) == MAX_CODE_LENGTH) {
-            raise(T_EFUNC_TOO_BIG, "function at %#lx", start_address);
+            RAISE(T_EFUNC_TOO_BIG, "function at %#lx", start_address);
             return 0;
         }
     }
@@ -109,12 +109,12 @@ extern pid_t get_pid(char const process_name[const]) {
 
     int printed_characters = snprintf(command, PATH_MAX, "pgrep %s", process_name);
     if (printed_characters < 0) {
-        raise(T_EPRINTF, "snprintf failed");
+        RAISE(T_EPRINTF, "snprintf failed");
     }
 
     pid_t pid =  pread_int(command);
     if (error_occurred()) {
-        raise(T_EPROC_NOT_RUNNING, "%s", process_name);
+        RAISE(T_EPROC_NOT_RUNNING, "%s", process_name);
     }
 
     return pid;

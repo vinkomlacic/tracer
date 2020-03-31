@@ -6,6 +6,7 @@
 #include "t_error.h"
 #include "log.h"
 #include "options_t.h"
+#include "con_color.h"
 
 #include "options.h"
 
@@ -19,7 +20,7 @@ static bool validate_options(options_t const * options);
  */
 extern void parse_options(int const argc, char * const argv[const], options_t * const options) {
     if (options == NULL) {
-        raise(T_ENULL_ARG, "options");
+        RAISE(T_ENULL_ARG, "options");
         return;
     }
     initialize_default_options(options);
@@ -51,7 +52,7 @@ extern void parse_options(int const argc, char * const argv[const], options_t * 
 
             case '?':
                 if (optopt == 'c' || optopt == 'b' || optopt == 'p' || optopt == 'e' || optopt == 'h') {
-                    raise(T_ECLI_EMPTY, "%c", optopt);
+                    RAISE(T_ECLI_EMPTY, "%c", optopt);
                     return;
                 }
                 WARN("Unknown option '-%c'", optopt);
@@ -66,7 +67,7 @@ extern void parse_options(int const argc, char * const argv[const], options_t * 
     }
 
     if (validate_options(options) == false) {
-        raise(T_ECLI_REQ, "One of the options is missing");
+        RAISE(T_ECLI_REQ, "One of the options is missing");
         display_help();
         return;
     }
@@ -84,7 +85,21 @@ static void initialize_default_options(options_t * const options) {
 
 
 static void display_help(void) {
-    printf("Usage: \n");
+    set_console_color(WHITE, true);
+    printf("\nUsage: tracer -p <process_name> -b <path_to_binary> -e <entry_point> -c <cleanup>\n");
+    reset_console_color();
+
+    printf("\nProgram takes control of the specified process at the specified entry point and\n");
+    printf("creates a virus which is then injected in the tracee process.\n");
+
+    printf("\nOptions:\n\n");
+    printf("\t-p\tName of the process\n");
+    printf("\t-b\tPath to the running process binary\n");
+    printf("\t-e\tEntry point in the process where the tracer will hook up (e.g. function f1)\n");
+    printf("\t-c\tCleanup option (optional) - inject and execute the virus and leave no trace\n");
+    printf("\t  \tIf you don't specify cleanup option program will replace entry function with\n");
+    printf("\t  \tthe virus and detach which means every time program executes the entry function\n");
+    printf("\t  \tthe virus will be executed.\n");
 }
 
 
