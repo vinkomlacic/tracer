@@ -3,7 +3,7 @@ CC=gcc
 
 
 # Log output level
-MACROS=-D INFO_ENABLE
+MACROS=-D INFO_ENABLE -D WARN_ENABLE
 
 # Compiler options
 OPTIONS=-std=gnu11 -ggdb

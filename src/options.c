@@ -13,7 +13,7 @@
 
 static void initialize_default_options(options_t * options);
 static void display_help(void);
-static bool validate_options(options_t const * options);
+static void validate_options(options_t const * options);
 
 /**
  * TODO: consider replacing getopt with argparse (getopt seems too simple)
@@ -36,19 +36,28 @@ extern void parse_options(int const argc, char * const argv[const], options_t * 
 
             case 'b':
                 strncpy(options->binary_path, optarg, PATH_MAX - 1);
+                if (strlen(optarg) > PATH_MAX) {
+                    WARN("Option -b value truncated (length > %d). This could produce unexpected results.", PATH_MAX);
+                }
                 break;
 
             case 'p':
                 strncpy(options->process_name, optarg, PATH_MAX - 1);
+                if (strlen(optarg) > PATH_MAX) {
+                    WARN("Option -p value truncated (length > %d). This could produce unexpected results.", PATH_MAX);
+                }
                 break;
 
             case 'e':
                 strncpy(options->entry_function, optarg, FUNCTION_NAME_MAX - 1);
+                if (strlen(optarg) > FUNCTION_NAME_MAX) {
+                    WARN("Option -e value truncated (length > %d). This could produce unexpected results.", FUNCTION_NAME_MAX);
+                }
                 break;
 
             case 'h':
                 display_help();
-                break;
+                exit(EXIT_SUCCESS);
 
             case '?':
                 if (optopt == 'c' || optopt == 'b' || optopt == 'p' || optopt == 'e' || optopt == 'h') {
@@ -66,13 +75,7 @@ extern void parse_options(int const argc, char * const argv[const], options_t * 
         if (error_occurred()) return;
     }
 
-    if (validate_options(options) == false) {
-        RAISE(T_ECLI_REQ, "One of the options is missing");
-        display_help();
-        return;
-    }
-
-
+    validate_options(options);
 }
 
 
@@ -103,12 +106,16 @@ static void display_help(void) {
 }
 
 
-static bool validate_options(options_t const * const options) {
-    bool validated = true;
+static void validate_options(options_t const * const options) {
+    size_t binary_path = strlen(options->binary_path);
+    size_t process_name = strlen(options->process_name);
+    size_t entry_function = strlen(options->entry_function);
 
-    validated = validated && (strlen(options->binary_path) > 0);
-    validated = validated && (strlen(options->process_name) > 0);
-    validated = validated && (strlen(options->entry_function) > 0);
-
-    return validated;
+    if (binary_path <= 0) {
+        RAISE(T_ECLI_REQ, "-b");
+    } else if (process_name <= 0) {
+        RAISE(T_ECLI_REQ, "-p");
+    } else if (entry_function <= 0) {
+        RAISE(T_ECLI_REQ, "-e");
+    }
 }
