@@ -49,4 +49,5 @@ typedef enum {
   T_EUNEXPECTED_STOP = -26,       // process stopped unexpectedly
   T_EARG_INVAL = -27,             // invalid argument
   T_ECALL_FAIL = -28,             // function call in tracee failed
+  T_EPATH_INVALID = -29,          // file at path does not exist
 } t_errno_t;

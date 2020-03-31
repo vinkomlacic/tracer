@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 #include "t_error.h"
 #include "pread.h"
@@ -10,6 +11,8 @@
 #include "procmem.h"
 
 #include "process_info.h"
+
+static bool file_exists(char const * filename);
 
 
 extern intptr_t get_process_base_address(pid_t const pid) {
@@ -32,6 +35,11 @@ extern intptr_t get_process_base_address(pid_t const pid) {
 extern intptr_t get_symbol_offset_in_binary(char const binary_path[const], char const symbol[const], bool const shared_object) {
     char command[PATH_MAX] = {0};
 
+    if (file_exists(binary_path) == false) {
+        RAISE(T_EPATH_INVALID, "%s", binary_path);
+        return 0;
+    }
+
     int printed_characters = 0;
     if (shared_object) {
         printed_characters = snprintf(command, PATH_MAX, "nm -D %s | grep -w %s", binary_path, symbol);
@@ -45,7 +53,10 @@ extern intptr_t get_symbol_offset_in_binary(char const binary_path[const], char 
     }
 
     intptr_t const offset = pread_word(command);
-    if (error_occurred()) return 0;
+    if (error_occurred()) {
+        RAISE(T_ESYMBOL_NOT_FOUND, "%s", symbol);
+        return 0;
+    }
 
     return offset;
 }
@@ -77,6 +88,7 @@ extern void get_libc_path(char const binary_path[const], char path[const]) {
     }
 
     pread_raw_line(command, path);
+    path[strlen(path) - 1] = '\0'; // remove empty character in the end
 }
 
 
@@ -118,4 +130,15 @@ extern pid_t get_pid(char const process_name[const]) {
     }
 
     return pid;
+}
+
+
+static bool file_exists(char const * const filename){
+    struct stat file;
+    int res = stat(filename, &file);
+    if (res == -1) {
+        return false;
+    }
+
+    return true;
 }

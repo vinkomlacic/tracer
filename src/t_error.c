@@ -56,7 +56,7 @@ extern void t_strerror(t_errno_t const error_code, size_t const string_length, c
             break;
 
         case T_ESYMBOL_NOT_FOUND:
-            strncpy(output, "specified symbol could not found in the object file", string_length);
+            strncpy(output, "specified symbol could not be found in the object file", string_length);
             break;
 
         case T_ECLI_EMPTY:
@@ -109,6 +109,10 @@ extern void t_strerror(t_errno_t const error_code, size_t const string_length, c
 
         case T_ECALL_FAIL:
             strncpy(output, "function call in tracee failed", string_length);
+            break;
+
+        case T_EPATH_INVALID:
+            strncpy(output, "path points to a non-existent file", string_length);
             break;
 
         case T_ERROR:

@@ -28,7 +28,7 @@ static void replace_entry_function(pid_t pid, intptr_t entry_function, intptr_t 
 static void detach_process(pstate_t const * pstate);
 
 
-/**
+/*
  * Instrumentation functions will not be linked in the tracee where the virus is copied
  * which will segfault tracee. That is why it's best to turn off sanitizers for this function.
  */
