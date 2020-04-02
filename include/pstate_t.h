@@ -8,9 +8,9 @@
 #define CODE_TO_RESTORE_MAX 36
 
 /**
- * Definition of a struct which holds process state.
- * PID and process name should be set only once - upon creation of the struct.
- * They are the indicator if the struct is initialized.
+ * Definition of a struct which holds a subset of the process state.
+ * In the context of this program all that is needed is the register values and the possible changes
+ * to the code that could be done during injecting code.
  */
 typedef struct PSTATE {
     struct user_regs_struct changed_regs;

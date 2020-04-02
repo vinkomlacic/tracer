@@ -12,6 +12,7 @@
 
 #include "process_info.h"
 
+
 static bool file_exists(char const * filename);
 
 
@@ -33,6 +34,14 @@ extern intptr_t get_process_base_address(pid_t const pid) {
 
 
 extern intptr_t get_symbol_offset_in_binary(char const binary_path[const], char const symbol[const], bool const shared_object) {
+    if (binary_path == NULL) {
+        RAISE(T_ENULL_ARG, "binary_path");
+        return 0;
+    }
+    if (symbol == NULL) {
+        RAISE(T_ENULL_ARG, "symbol");
+        return 0;
+    }
     char command[PATH_MAX] = {0};
 
     if (file_exists(binary_path) == false) {
@@ -79,6 +88,14 @@ extern intptr_t locate_libc_in(pid_t const pid) {
 
 
 extern void get_libc_path(char const binary_path[const], char path[const]) {
+    if (binary_path == NULL) {
+        RAISE(T_ENULL_ARG, "binary_path");
+        return;
+    }
+    if (path == NULL) {
+        RAISE(T_ENULL_ARG, "path");
+        return;
+    }
     char command[PATH_MAX] = {0};
 
     int printed_characters = snprintf(command, PATH_MAX, "ldd %s | grep -o -e \"/.*%s.* \"", binary_path, LIBC_NAME);
@@ -88,11 +105,16 @@ extern void get_libc_path(char const binary_path[const], char path[const]) {
     }
 
     pread_raw_line(command, path);
+    if (error_occurred()) return;
     path[strlen(path) - 1] = '\0'; // remove empty character in the end
 }
 
 
 extern size_t get_function_code(pid_t const pid, intptr_t const start_address, uint8_t code_output[]) {
+    if (code_output == NULL) {
+        RAISE(T_ENULL_ARG, "code_output");
+        return 0;
+    }
     uint8_t const retq_instruction = 0xC3;
     size_t i = 0;
     for (; i < MAX_CODE_LENGTH; i++) {
@@ -117,16 +139,22 @@ extern size_t get_function_code(pid_t const pid, intptr_t const start_address, u
 
 
 extern pid_t get_pid(char const process_name[const]) {
+    if (process_name == NULL) {
+        RAISE(T_ENULL_ARG, "process_name");
+        return -1;
+    }
     char command[PATH_MAX] = {0};
 
     int printed_characters = snprintf(command, PATH_MAX, "pgrep %s", process_name);
     if (printed_characters < 0) {
         RAISE(T_EPRINTF, "snprintf failed");
+        return -1;
     }
 
     pid_t pid =  pread_int(command);
     if (error_occurred()) {
         RAISE(T_EPROC_NOT_RUNNING, "%s", process_name);
+        return -1;
     }
 
     return pid;

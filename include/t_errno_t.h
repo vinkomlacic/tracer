@@ -11,11 +11,7 @@
 
 typedef enum {
   T_SUCCESS = 0,
-
-  /**
-  * Generic errors: consult errno to see detailed error code
-  */
-  T_ERROR = -1,
+  T_ERROR = -1,                   // unknown error, consult errno
   T_EPOPEN = -2,                  // error opening pipe
   T_EPCLOSE = -3,                 // error closing pipe
   T_EPREAD = -4,                  // error reading from pipe

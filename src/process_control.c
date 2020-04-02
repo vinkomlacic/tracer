@@ -36,6 +36,11 @@ extern void wait_for_breakpoint(pid_t const pid) {
 
 
 extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int const arg) {
+    if (pstate == NULL) {
+        RAISE(T_ENULL_ARG, "pstate");
+        return -1;
+    }
+
     unsigned long long int const argv[] = {(unsigned long long int) arg};
     size_t const argc = 1;
     set_arguments(pstate->pid, argc, argv);
@@ -55,7 +60,7 @@ extern int call_virus(pstate_t * const pstate, intptr_t const virus_address, int
 
 
 /**
- * Supports up to 6 arguments. More than 6 arguments means they have to be put on the stack.
+ * Accepts up to 6 arguments. More than 6 arguments means they have to be put on the stack.
  * This could be put in another function if needed.
  */
 static void set_arguments(pid_t const pid, size_t const argc, unsigned long long const argv[const static 1]) {
@@ -97,6 +102,11 @@ extern intptr_t call_posix_memalign(
         pstate_t * const pstate, intptr_t const posix_memalign_address,
         int const alignment, size_t const size
 ) {
+    if (pstate == NULL) {
+        RAISE(T_ENULL_ARG, "pstate");
+        return -1;
+    }
+
     intptr_t stack_variable = allocate_stack_variable(pstate->pid);
     if (error_occurred()) return -1;
     DEBUG("Stack variable allocated, address: %#lx", stack_variable);
@@ -161,6 +171,11 @@ extern void call_mprotect(
         pstate_t * const pstate, intptr_t const mprotect_address,
         intptr_t const start_address, size_t const length, int const prot
 ) {
+    if (pstate == NULL) {
+        RAISE(T_ENULL_ARG, "pstate");
+        return;
+    }
+
     unsigned long long int const argv[] = {(unsigned long long int) start_address, length, (unsigned) prot};
     size_t const argc = 3;
     set_arguments(pstate->pid, argc, argv);
@@ -186,6 +201,11 @@ extern void call_mprotect(
 
 
 extern void call_free(pstate_t * const pstate, intptr_t const free_address, intptr_t const address) {
+    if (pstate == NULL) {
+        RAISE(T_ENULL_ARG, "pstate");
+        return;
+    }
+
     unsigned long long int const argv[] = {(unsigned long long int) address};
     size_t const argc = 1;
     set_arguments(pstate->pid, argc, argv);

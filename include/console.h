@@ -1,6 +1,6 @@
 #pragma once
 
-/**
+/*
  * Defines logging output in the console.
  */
 #include <stdarg.h>

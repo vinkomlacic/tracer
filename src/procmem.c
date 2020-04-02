@@ -124,6 +124,10 @@ extern void proc_read_block(
         RAISE(T_EADDRESS, "start_address");
         return;
     }
+    if (output == NULL) {
+        RAISE(T_ENULL_ARG, "output");
+        return;
+    }
 
     int const fd = procmem_open_at(pid, start_address, O_RDONLY);
     if (error_occurred()) return;
@@ -142,6 +146,10 @@ extern void proc_read_block(
 extern void proc_write_block(pid_t const pid, intptr_t const start_address, size_t const block_size, uint8_t const code[const static 1]) {
     if (start_address == 0) {
         RAISE(T_EADDRESS, "start_address");
+        return;
+    }
+    if (code == NULL) {
+        RAISE(T_ENULL_ARG, "code");
         return;
     }
 

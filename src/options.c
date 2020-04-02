@@ -15,12 +15,14 @@ static void initialize_default_options(options_t * options);
 static void display_help(void);
 static void validate_options(options_t const * options);
 
-/**
- * TODO: consider replacing getopt with argparse (getopt seems too simple)
- */
+// TODO: consider replacing getopt with argparse
 extern void parse_options(int const argc, char * const argv[const], options_t * const options) {
     if (options == NULL) {
         RAISE(T_ENULL_ARG, "options");
+        return;
+    }
+    if (argv == NULL) {
+        RAISE(T_ENULL_ARG, "argv");
         return;
     }
     initialize_default_options(options);
@@ -107,15 +109,11 @@ static void display_help(void) {
 
 
 static void validate_options(options_t const * const options) {
-    size_t binary_path = strlen(options->binary_path);
-    size_t process_name = strlen(options->process_name);
-    size_t entry_function = strlen(options->entry_function);
-
-    if (binary_path <= 0) {
+    if (strlen(options->binary_path) <= 0) {
         RAISE(T_ECLI_REQ, "-b");
-    } else if (process_name <= 0) {
+    } else if (strlen(options->process_name) <= 0) {
         RAISE(T_ECLI_REQ, "-p");
-    } else if (entry_function <= 0) {
+    } else if (strlen(options->entry_function) <= 0) {
         RAISE(T_ECLI_REQ, "-e");
     }
 }

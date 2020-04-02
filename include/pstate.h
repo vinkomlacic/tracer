@@ -9,9 +9,8 @@
 /**
  * Saves the process state (values of all registers) into the pstate_t struct.
  *
- * Precondition: pstate must not be null.
- *
- * If pstate is null, T_EPSTATE_INVALID is raised.
+ * If pstate is NULL, T_EPSTATE_INVALID is raised.
+ * If any other error occurs, t_error is set accordingly.
  */
 extern void save_process_regs(pstate_t *pstate);
 
@@ -19,10 +18,9 @@ extern void save_process_regs(pstate_t *pstate);
 /**
  * Saves the code_size bytes of code currently in the process starting from the start_address.
  *
- * Precondition: pstate must not be null, start_address must not be zero
- *
- * If pstate is null, T_EPSTATE_INVALID is raised.
- * If start_address is 0,
+ * If pstate is NULL, T_EPSTATE_INVALID is raised.
+ * If start_address is 0, T_EADDRESS is raised.
+ * If any other error occurs, t_error is set accordingly.
  */
 extern void save_process_code(pstate_t *pstate, intptr_t start_address, size_t code_size);
 
@@ -32,19 +30,15 @@ extern void save_process_code(pstate_t *pstate, intptr_t start_address, size_t c
  * This changes process registers and restores possible code changes (e.g. setting breakpoints or
  * other code injections).
  *
- * Precondition: pstate must not be null
- *
- * If pstate is null, T_EPSTATE_INVALID is raised.
+ * If pstate is NULL, T_EPSTATE_INVALID is raised.
+ * If any other error occurs, t_error is set accordingly.
  */
 extern void revert_to(pstate_t const * pstate);
 
 
 /**
- * Returns the address after the changes.
- * If there were no changes to the process, 0 is returned.
+ * Returns the address after the changed code.
  *
- * Precondition: pstate must not be null.
- *
- * If pstate is null, T_EPSTATE_INVALID is raised.
+ * If pstate is NULL, T_EPSTATE_INVALID is raised.
  */
 extern intptr_t get_address_after_changes(pstate_t const * pstate);

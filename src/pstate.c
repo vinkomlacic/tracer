@@ -32,6 +32,8 @@ extern void save_process_code(pstate_t * const pstate, intptr_t const start_addr
 
     if (pstate->changed_code_len == 0) pstate->change_address = start_address;
     proc_read_block(pstate->pid, start_address, code_size, &pstate->changed_code[pstate->changed_code_len]);
+    if (error_occurred()) return;
+
     pstate->changed_code_len += code_size;
     DEBUG("Copied %lu bytes of process code from %#lx", code_size, start_address);
 }

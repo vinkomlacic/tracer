@@ -10,19 +10,17 @@
 
 
 /**
- * TODO: correct docs
  * Parses the argv array and returns a struct containing all values provided.
- * The function heavily relies on the getopt GNU library.
+ * Note: Unknown options are ignored and a warning is issued, however this will probably result in
+ * an error further down the road.
  *
- * Note: Non option arguments are ignored.
+ * If an error occurs, t_error is set and the function will return the options_t struct which
+ * will contain default values.
  *
- * If an error occurs, t_errno is set and the function will return the options_t struct which
- * will contain parsed options until the moment error occurred.
- *
- * Possible t_errno values:
- *    T_ECLI_EMPTY  - option is missing an argument
- *    T_ECLI_ARGV   - unrecognized option is provided
- *    T_ECLI_REQ    - required option not found
+ * Possible t_error codes:
+ * T_ENULL_ARG - options or argv is null
+ * T_ECLI_EMPTY - option is missing an argument
+ * T_ECLI_REQ - required option is missing
  *
  * On success, populated options_t struct is returned.
  */

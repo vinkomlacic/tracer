@@ -11,7 +11,7 @@ __attribute__ ((format(scanf, 2, 3)))
 static void pread_item(char const command[], char const format[], ...);
 
 
-extern intptr_t pread_word(char const command[const]) {
+extern intptr_t pread_word(char const command[const static 1]) {
   intptr_t output = 0L;
 
 #pragma GCC diagnostic push
@@ -27,7 +27,7 @@ extern intptr_t pread_word(char const command[const]) {
 }
 
 
-extern int pread_int(char const command[const]) {
+extern int pread_int(char const command[const static 1]) {
   int output = 0;
   pread_item(command, "%d", &output);
   if (error_occurred()) {
@@ -38,7 +38,12 @@ extern int pread_int(char const command[const]) {
 }
 
 
-extern void pread_raw_line(char const command[const], char output[static BUFFER_LENGTH]) {
+extern void pread_raw_line(char const command[const static 1], char output[static BUFFER_LENGTH]) {
+    if (command == NULL) {
+        RAISE(T_ENULL_ARG, "command");
+        return;
+    }
+
     FILE *pipe = popen(command, "r");
     if (pipe == NULL) {
         RAISE(T_EPOPEN, "%s", command);

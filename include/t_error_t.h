@@ -7,6 +7,9 @@
 #define MAX_MESSAGE_SIZE 160
 
 
+/**
+ * Holds information which detail an error that could occur in the program.
+ */
 typedef struct ERROR {
     unsigned line;
     t_errno_t code;

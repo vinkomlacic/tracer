@@ -10,7 +10,7 @@
 
 
 extern void pattach(pid_t const pid) {
-    if (ptrace(PTRACE_ATTACH, pid, 0, 0) == -1) {
+    if (ptrace(PTRACE_ATTACH, pid, NULL, NULL) == -1) {
         RAISE(T_EPTRACE, "attaching %d", pid);
         return;
     }
@@ -25,7 +25,7 @@ extern void pattach(pid_t const pid) {
 
 extern void pcontinue(pid_t const pid) {
     TRACE("rip: %#llx", get_regs(pid).rip);
-    if (ptrace(PTRACE_CONT, pid, 0, SIGCONT) == -1) {
+    if (ptrace(PTRACE_CONT, pid, NULL, SIGCONT) == -1) {
         RAISE(T_EPTRACE, "sending SIGCONT to %d", pid);
     }
     TRACE("SIGCONT sent");
@@ -51,7 +51,7 @@ extern void set_regs(pid_t const pid, struct user_regs_struct const * const regs
 
 extern void pdetach(pid_t const pid) {
     TRACE("rip: %#llx", get_regs(pid).rip);
-    if (ptrace(PTRACE_DETACH, pid, 0, 0) == -1) {
+    if (ptrace(PTRACE_DETACH, pid, NULL, NULL) == -1) {
         RAISE(T_EPTRACE, "detaching %d", pid);
     }
     TRACE("Process %d detached", pid);

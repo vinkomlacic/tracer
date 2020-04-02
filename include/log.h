@@ -1,5 +1,5 @@
 #pragma once
-/**
+/*
  * Logging levels and logging helper macros.
  * Consult documentation on how to use this.
  */
