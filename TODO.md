@@ -16,7 +16,6 @@
 *   After this write the test cases in C code.
  
 ## Documentation
-*   ~~Write API instructions and add comments to clarify actions where necessary~~
 *   Create the report
 
 ## Scanning for prerequisite tools
