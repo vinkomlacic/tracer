@@ -79,6 +79,7 @@ static void pread_item(char const command[const], char const format[const], ...)
     if (sscanf(buffer, format, va_arg(arguments, void const *)) != 1) {
 #pragma GCC diagnostic pop
         RAISE(T_EPREAD, "format %s", format);
+        va_end(arguments);
         return;
     }
     va_end(arguments);
